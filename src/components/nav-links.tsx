@@ -49,7 +49,7 @@ export function NavLinks({ className = "" }: { className?: string }) {
     <nav
       ref={wrap}
       aria-label="Điều hướng chính"
-      className={`relative gap-0.5 rounded-xl border border-line-strong bg-surface-2/50 p-1 text-sm ${className}`}
+      className={`relative gap-0.5 rounded-xl border border-line bg-surface p-1 text-sm ${className}`}
     >
       <span ref={pill} className="nav-pill" aria-hidden />
       {NAV.map((l, i) => (
@@ -61,7 +61,7 @@ export function NavLinks({ className = "" }: { className?: string }) {
           }}
           aria-current={i === idx ? "page" : undefined}
           className={`relative z-[1] rounded-lg px-3.5 py-1.5 font-medium whitespace-nowrap transition-colors ${
-            i === idx ? "text-accent-ink" : "text-ink-2 hover:text-ink"
+            i === idx ? "text-bg" : "text-ink-2 hover:text-ink"
           }`}
         >
           {l.label}

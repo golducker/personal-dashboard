@@ -31,14 +31,15 @@ async function loadStats(): Promise<Stats> {
   return { dueToday, overdue, events };
 }
 
-function Chip({ value, label, tone }: { value: number | null; label: string; tone: "accent" | "danger" | "plain" }) {
-  const color = tone === "danger" && value ? "text-danger" : tone === "accent" ? "text-accent-strong" : "text-ink";
+function Stat({ value, label, alarm = false }: { value: number | null; label: string; alarm?: boolean }) {
+  // Only a non-zero overdue count earns colour; everything else stays ink so the alarm actually reads as one.
+  const color = alarm && value ? "text-danger" : value ? "text-ink" : "text-ink-3";
   return (
-    <div className={`stat-chip ${tone === "danger" && value ? "!border-danger/40" : ""}`}>
-      <span className={`font-display text-[28px] leading-none font-extrabold md:text-[34px] ${color}`}>
+    <div className="stat">
+      <span className={`font-display tabular text-[30px] leading-none font-bold tracking-tight md:text-[40px] ${color}`}>
         {value === null ? <span aria-label="Không có dữ liệu">–</span> : <CountUp value={value} />}
       </span>
-      <span className="mt-1 text-xs leading-4 text-ink-2">{label}</span>
+      <span className="mt-1.5 text-xs leading-4 text-ink-2 md:text-[13px]">{label}</span>
     </div>
   );
 }
@@ -52,12 +53,12 @@ export function HeroView({ stats }: { stats: Stats | null }) {
   const s = stats ?? { dueToday: null, overdue: null, events: null };
 
   return (
-    <section className="hero-stage reveal mb-5 px-5 py-6 md:mb-6 md:px-9 md:py-8" aria-label="Tổng quan hôm nay">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3 gap-y-4 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:gap-x-6">
-        <div className="col-start-1 row-start-1 min-w-0 space-y-1.5 self-start">
+    <section className="hero-stage mb-6 pt-4 pb-6 md:mb-8 md:pt-8 md:pb-8" aria-label="Tổng quan hôm nay">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3 gap-y-5 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:gap-x-8">
+        <div className="col-start-1 row-start-1 min-w-0 space-y-2 self-start">
           <p className="text-sm font-medium text-ink-2 first-letter:uppercase">{date}</p>
-          <h1 className="font-display text-[30px] leading-[1.05] font-extrabold tracking-tight text-balance md:text-[48px]">
-            {greeting(hour)}, <span className="text-accent-strong">Thịnh.</span>
+          <h1 className="font-display text-[32px] leading-[1.02] font-bold tracking-[-0.03em] text-balance md:text-[56px]">
+            {greeting(hour)},<br className="max-sm:hidden" /> Thịnh.
           </h1>
         </div>
 
@@ -69,11 +70,11 @@ export function HeroView({ stats }: { stats: Stats | null }) {
           mascotClassName="justify-self-end col-start-2 row-start-1 max-md:[--ms:116px] md:max-lg:[--ms:160px] lg:col-start-3 lg:row-span-2"
         />
 
-        {/* Three equal columns on phones so the chips never wrap to an orphan row. */}
-        <div className="col-span-2 row-start-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-2.5 lg:col-span-1 lg:row-start-2">
-          <Chip value={s.dueToday} label="deadline hôm nay" tone="accent" />
-          <Chip value={s.overdue} label="quá hạn" tone="danger" />
-          <Chip value={s.events} label="lịch hôm nay" tone="plain" />
+        {/* One ledger row, hairline-separated; three equal columns on phones so nothing wraps. */}
+        <div className="col-span-2 row-start-3 grid grid-cols-3 sm:flex lg:col-span-1 lg:row-start-2">
+          <Stat value={s.dueToday} label="deadline hôm nay" />
+          <Stat value={s.overdue} label="quá hạn" alarm />
+          <Stat value={s.events} label="lịch hôm nay" />
         </div>
       </div>
     </section>

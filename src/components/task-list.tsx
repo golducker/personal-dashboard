@@ -20,7 +20,7 @@ const RING = {
 
 function Row({ task, overdue, onClose }: { task: TaskView; overdue?: boolean; onClose: (t: TaskView, el: Element) => void }) {
   return (
-    <li className="reveal group flex items-start gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-surface-2">
+    <li className="group flex items-start gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-surface-2">
       <button
         onClick={(e) => onClose(task, e.currentTarget)}
         aria-label={`Hoàn thành: ${task.content}`}

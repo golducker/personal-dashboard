@@ -43,7 +43,7 @@ function ProgressList({ items }: { items: Progress[] }) {
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={p.percent} aria-valuemin={0} aria-valuemax={100} aria-label={p.name}>
-            <div className="h-full rounded-full bg-gradient-to-r from-accent to-secondary" style={{ width: `${p.percent}%` }} />
+            <div className="h-full rounded-full bg-accent" style={{ width: `${p.percent}%` }} />
           </div>
         </li>
       ))}
@@ -73,7 +73,7 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
 
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
         <div className="space-y-5 lg:col-span-8">
-          <form method="get" action="/work" className="card reveal flex flex-wrap items-end gap-3 p-4">
+          <form method="get" action="/work" className="card flex flex-wrap items-end gap-3 p-4">
             {[
               { name: "assignee", label: "Người phụ trách", value: params.assignee, options: assignees.map((a) => [a, a] as const) },
               { name: "project", label: "Dự án", value: params.project, options: projects.map((a) => [a, a] as const) },
@@ -147,7 +147,7 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
             ) : (
               <div className="space-y-3">
                 {timeline.days.map((d) => (
-                  <section key={d.day} className={`reveal rounded-2xl p-4 ${d.isToday ? "bg-accent-soft" : "bg-surface-2"}`}>
+                  <section key={d.day} className={`rounded-2xl p-4 ${d.isToday ? "bg-accent-soft" : "bg-surface-2"}`}>
                     <h3 className="mb-2 flex items-center gap-2 text-sm">
                       <span className={`font-semibold ${d.isToday ? "text-accent-deep" : ""}`}>{d.isToday ? "Hôm nay" : formatDayKey(d.day)}</span>
                       {d.isToday && <span className="text-ink-3">{formatDayKey(d.day)}</span>}

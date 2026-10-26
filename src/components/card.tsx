@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import type { Loaded } from "@/lib/today";
 import { MascotStatic } from "./mascot";
 
-// Shape rule: panels 20px (.card in globals.css), controls rounded-xl, pills rounded-full.
-// .card is glass in the dark world and a warm paper card in the light world; .btn gets ripple + press scale (GlobalFx).
+// Shape rule: panels 16px (.card in globals.css), controls rounded-xl, tags rounded-md.
+// .card is a flat solid surface with a hairline border in both worlds; .btn gets a 1px press.
 export const CARD = "card";
 const BTN_BASE =
   "btn inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold disabled:pointer-events-none disabled:opacity-50 md:min-h-9 md:px-3.5 md:py-1.5";
@@ -31,20 +31,16 @@ export function Panel({
   children: ReactNode;
 }) {
   return (
-    <section className={`${CARD} reveal flex min-w-0 flex-col ${className}`}>
-      <header className="flex items-start gap-2.5 px-5 pt-5 pb-3">
-        {icon && (
-          <span className="mt-px grid size-7 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent-strong [&>svg]:size-[17px]">
-            {icon}
-          </span>
-        )}
-        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 pt-0.5">
-          <h2 className="font-display text-[17px] leading-6 font-bold tracking-tight">{title}</h2>
-          {meta && <span className="text-sm text-ink-3">{meta}</span>}
+    <section className={`${CARD} flex min-w-0 flex-col ${className}`}>
+      <header className="flex items-center gap-2 border-b border-line px-5 py-3.5">
+        {icon && <span className="shrink-0 text-ink-3 [&>svg]:size-4">{icon}</span>}
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2">
+          <h2 className="text-[15px] leading-6 font-semibold tracking-[-0.01em]">{title}</h2>
+          {meta && <span className="tabular text-[13px] text-ink-3">{meta}</span>}
         </div>
         {action && <div className="ml-auto shrink-0">{action}</div>}
       </header>
-      <div className="flex-1 px-5 pb-5">{children}</div>
+      <div className="flex-1 px-5 pt-4 pb-5">{children}</div>
     </section>
   );
 }
@@ -56,14 +52,14 @@ export function Pill({ tone = "neutral", children }: { tone?: "neutral" | "accen
     danger: "bg-danger-soft text-danger",
     warn: "bg-warn-soft text-warn",
   }[tone];
-  return <span className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{children}</span>;
+  return <span className={`inline-flex shrink-0 items-center rounded-md px-1.5 py-px text-xs font-medium ${cls}`}>{children}</span>;
 }
 
 export function Empty({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-surface-2 px-4 py-5 text-sm text-ink-2">
-      <MascotStatic size="sm" className="shrink-0" />
-      <p className="min-w-0 flex-1">{children}</p>
+    <div className="flex items-center gap-3 py-2 text-sm text-ink-2">
+      <MascotStatic size="sm" className="shrink-0 opacity-80" />
+      <p className="min-w-0 flex-1 text-pretty">{children}</p>
     </div>
   );
 }
@@ -105,7 +101,7 @@ export function SourceProblem({
           ? `Chưa cấu hình ${name}`
           : `Không tải được dữ liệu ${name}`;
   return (
-    <div className="space-y-3 rounded-2xl bg-surface-2 p-4 text-sm">
+    <div className="space-y-3 text-sm">
       <p className="font-medium">{title}</p>
       {failure.kind === "error" && (
         // Raw API errors can be long JSON; show a readable line and keep the detail in the tooltip.

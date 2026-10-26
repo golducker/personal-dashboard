@@ -25,7 +25,7 @@ export function dueLabel(d: Date | null): string {
 export function TaskLine({ r, today, showAssignee = true }: { r: DeadlineRow; today: string; showAssignee?: boolean }) {
   const overdue = isOverdue(r, today);
   return (
-    <li className="reveal flex items-start gap-3">
+    <li className="flex items-start gap-3">
       <DeadlineProgress id={r.id} title={r.title} progress={r.progress} sheetDone={r.sheetDone} />
       <span className={`w-14 shrink-0 pt-0.5 font-mono text-xs leading-5 ${overdue ? "font-semibold text-danger" : "text-ink-2"}`}>
         {r.dueAt ? dueLabel(r.dueAt) : "--"}
@@ -94,7 +94,7 @@ export async function DeadlinePanel({ className, showDone }: { className?: strin
       ) : (
         <div className="space-y-5">
           {work.length > 0 && (
-            <div className="rounded-xl bg-surface-2 p-3.5">
+            <div className="rounded-xl border border-line p-3.5">
               <p className="mb-2 flex flex-wrap items-center gap-2 text-sm">
                 <span className="font-semibold">Công việc</span>
                 {overdueWork.length > 0 && <Pill tone="danger">{overdueWork.length} quá hạn</Pill>}

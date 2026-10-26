@@ -4,7 +4,6 @@ import { Be_Vietnam_Pro, Bricolage_Grotesque, JetBrains_Mono } from "next/font/g
 import { Ambient } from "@/components/ambient";
 import { AppChrome } from "@/components/app-chrome";
 import { GlobalFx } from "@/components/global-fx";
-import { RevealObserver } from "@/components/reveal";
 import { SwRegister } from "@/components/sw-register";
 import { ToastHost } from "@/components/toast";
 import "./globals.css";
@@ -77,7 +76,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </div>
         <ToastHost />
         <GlobalFx />
-        <RevealObserver />
         <SwRegister />
       </body>
     </html>

@@ -28,7 +28,7 @@ export default async function HealthPage() {
           {sources.map((s) => {
             const badge = BADGE[s.status];
             return (
-              <li key={s.source} className="reveal rounded-xl px-2 py-3 transition-colors hover:bg-surface-2">
+              <li key={s.source} className="rounded-xl px-2 py-3 transition-colors hover:bg-surface-2">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="flex items-center gap-2 text-sm font-semibold">
