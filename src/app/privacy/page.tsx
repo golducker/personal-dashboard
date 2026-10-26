@@ -23,8 +23,9 @@ export default function PrivacyPage() {
             when the owner does so from the dashboard.
           </li>
           <li>
-            <b>Google Drive (read-only)</b>: reads file names, folders and content of documents the owner chooses, to
-            show upcoming projects and deadlines.
+            <b>Google Drive (read-only)</b>: reads file names, folders and modification times of the folders and
+            shared drives the owner adds in Settings, and the cell contents of Google Sheets there (via the Sheets API),
+            to list recent files and extract task deadlines. Nothing is written back to Drive.
           </li>
           <li>
             <b>Google Drive (files created by this app)</b>: creates and updates only files the app itself made, such
@@ -38,7 +39,7 @@ export default function PrivacyPage() {
 
       <Section title="How the data is stored">
         The Google refresh token is encrypted (AES-256-GCM) before it is saved. Calendar events are fetched on demand
-        and not stored. Drive metadata and extracted deadlines are cached in a private database (Neon Postgres,
+        and not stored. Drive file metadata and the tasks extracted from spreadsheets are cached in a private database (Neon Postgres,
         Singapore) so the dashboard loads quickly. Data is never sold, shared with third parties, used for
         advertising, or used to train AI models.
       </Section>

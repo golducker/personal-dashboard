@@ -93,13 +93,18 @@ export const gradeEvents = pgTable(
   (t) => [uniqueIndex("grade_events_course_sem_hash_idx").on(t.courseCode, t.semester, t.scoreHash)],
 );
 
+export const SOURCE_KINDS = ["folder", "shared_drive", "file", "sheet"] as const;
+export type SourceKind = (typeof SOURCE_KINDS)[number];
+
 export const sources = pgTable("sources", {
   id: uuid("id").primaryKey().defaultRandom(),
-  kind: text("kind", { enum: ["folder", "shared_drive", "file"] }).notNull(),
+  kind: text("kind", { enum: SOURCE_KINDS }).notNull(),
   googleId: text("google_id").notNull(),
   label: text("label").notNull(),
   profile: text("profile", { enum: PROFILES }).notNull(),
   extractDeadlines: boolean("extract_deadlines").notNull().default(false),
+  /** Parser settings (see src/lib/drive/config.ts). Null = index files only. */
+  config: jsonb("config"),
   changeToken: text("change_token"),
   lastSyncedAt: tstz("last_synced_at"),
   createdAt: tstz("created_at").notNull().defaultNow(),
@@ -137,8 +142,17 @@ export const deadlines = pgTable("deadlines", {
     .notNull()
     .references(() => files.id, { onDelete: "cascade" }),
   projectId: uuid("project_id").references(() => projects.id, { onDelete: "set null" }),
+  sourceId: uuid("source_id").references(() => sources.id, { onDelete: "cascade" }),
+  /** `<fileId>:<tab>:<STT|row>`; sync upserts on this. */
+  rowKey: text("row_key").unique(),
   title: text("title").notNull(),
-  dueAt: tstz("due_at").notNull(),
+  dueAt: tstz("due_at"),
+  groupLabel: text("group_label"),
+  groupDate: tstz("group_date"),
+  assignee: text("assignee"),
+  status: text("status"),
+  done: boolean("done").notNull().default(false),
+  link: text("link"),
   rawText: text("raw_text").notNull().default(""),
   confidence: real("confidence").notNull().default(0),
   manualOverride: boolean("manual_override").notNull().default(false),

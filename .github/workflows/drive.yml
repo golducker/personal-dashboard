@@ -1,0 +1,34 @@
+# Triggers the dashboard's Drive sync (/api/sync/drive). The server does the work; this job only
+# calls it. The repo is public, so this log must stay public-safe: print the HTTP status only,
+# never the response body.
+name: Drive sync
+
+on:
+  schedule:
+    # cron is UTC; Vietnam is UTC+7. 7:00-23:00 VN = 00:00-16:00 UTC of the same day.
+    - cron: "*/30 0-15 * * *" # every 30 min, 7:00-22:30 VN
+    - cron: "0 16 * * *" # 23:00 VN
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: drive-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Call dashboard
+        env:
+          SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+        run: |
+          status=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 300 -X POST \
+            -H "Authorization: Bearer $SYNC_SECRET" \
+            "$DASHBOARD_URL/api/sync/drive")
+          echo "HTTP $status"
+          case "$status" in 2*) ;; *) exit 1 ;; esac

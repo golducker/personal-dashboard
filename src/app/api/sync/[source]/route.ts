@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { syncRuns } from "@/db/schema";
 import { checkBearer } from "@/lib/auth";
+import { runDriveSync } from "@/lib/drive/sync";
 import { MAX_BODY_BYTES, ftugateBodySchema, handleFtugate } from "@/lib/ftugate/sync";
 import { isSyncSource } from "@/lib/sources";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 // Stub endpoint: GitHub Actions / cron call this to report (and later perform) a sync.
 export async function POST(
@@ -42,6 +44,15 @@ export async function POST(
     }
     const { status, result } = await handleFtugate(parsed.data);
     return NextResponse.json(result, { status });
+  }
+
+  if (source === "drive") {
+    try {
+      const { status, result } = await runDriveSync();
+      return NextResponse.json(result, { status });
+    } catch {
+      return NextResponse.json({ ok: false, error: "sync_failed" }, { status: 500 });
+    }
   }
 
   let count = 0;

@@ -1,6 +1,7 @@
 import { GoogleLogo, ListChecks, Plugs } from "@phosphor-icons/react/dist/ssr";
 import { AppHeader } from "@/components/app-header";
 import { BTN_PRIMARY, Panel, Pill } from "@/components/card";
+import { DriveSourcesPanel } from "@/components/drive-sources";
 import { DisconnectGoogleButton } from "@/components/disconnect-google-button";
 import { getConnection } from "@/lib/google";
 import { isConfigured } from "@/lib/sources";
@@ -67,9 +68,10 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </p>
         </Panel>
 
+        <DriveSourcesPanel />
+
         <Panel title="Sắp có" icon={<Plugs />}>
           <ul className="space-y-2 text-sm text-ink-2">
-            <li>Nguồn Google Drive: dự án và deadline từ thư mục được chọn.</li>
             <li>Thông báo đẩy trên điện thoại.</li>
           </ul>
         </Panel>

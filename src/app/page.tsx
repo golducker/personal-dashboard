@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { AppHeader } from "@/components/app-header";
 import { CalendarSection } from "@/components/calendar-section";
+import { DeadlinePanel, RecentFilesPanel } from "@/components/deadline-sections";
 import { PanelSkeleton } from "@/components/card";
 import { ExamList, GradesPanel, NoticeList, WeekSchedule } from "@/components/ftu-sections";
 import { TasksSection } from "@/components/tasks-section";
@@ -17,6 +18,8 @@ const LAYOUT = {
   week: "lg:col-span-8 lg:col-start-1 lg:row-start-2",
   grades: "lg:col-span-8",
   notices: "lg:col-span-4",
+  deadlines: "lg:col-span-7",
+  drive: "lg:col-span-5",
 };
 
 function greeting(now: Date): string {
@@ -27,7 +30,8 @@ function greeting(now: Date): string {
   return "Chào buổi tối, gng.";
 }
 
-export default function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ done?: string; drive?: string }> }) {
+  const { done, drive } = await searchParams;
   const now = new Date();
   // "Thứ Hai, 26 tháng 10, 2026" → title without the year
   const title = formatLongDate(now).split(", ").slice(0, 2).join(", ");
@@ -52,6 +56,12 @@ export default function Home() {
         </Suspense>
         <Suspense fallback={<PanelSkeleton title="Thông báo FTU" className={LAYOUT.notices} />}>
           <NoticeList className={LAYOUT.notices} />
+        </Suspense>
+        <Suspense fallback={<PanelSkeleton title="Deadline" className={LAYOUT.deadlines} />}>
+          <DeadlinePanel className={LAYOUT.deadlines} showDone={done === "1"} />
+        </Suspense>
+        <Suspense fallback={<PanelSkeleton title="Drive gần đây" className={LAYOUT.drive} />}>
+          <RecentFilesPanel className={LAYOUT.drive} profile={drive} />
         </Suspense>
       </div>
     </div>
