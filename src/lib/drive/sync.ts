@@ -14,7 +14,8 @@ import {
 import { readConfig } from "./config";
 import { parseSheet, tabsToFetch, type ParsedDeadline } from "./parsers";
 
-export const MAX_SHEETS_PER_RUN = 50;
+// Two Sheets reads per sheet; the read quota is 60 per user per minute.
+export const MAX_SHEETS_PER_RUN = 25;
 export const USER_TOKEN_KEY = "drive_user_change_token";
 
 type Db = Awaited<ReturnType<typeof getDb>>;
@@ -399,6 +400,12 @@ async function parsePending(ctx: Ctx, source: SourceRow, budget: { left: number 
       ctx.result.deleted += deleted;
     } catch (e) {
       if (e instanceof GoogleNotConnectedError) throw e;
+      if (e instanceof GoogleApiError && e.status === 429) {
+        // Sheets read quota (per user per minute): stop and let the next run pick up the rest.
+        attempted--;
+        budget.left = 0;
+        break;
+      }
       ctx.result.failed++;
     }
   }
