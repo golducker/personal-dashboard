@@ -11,7 +11,7 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-[calc(var(--safe-top)+2rem)] pb-[calc(var(--safe-bottom)+3rem)] text-sm leading-6 text-ink-2">
       <Link href="/" className="mb-8 inline-flex min-h-11 items-center gap-2 text-ink-3 hover:text-ink">
-        <MascotStatic size="sm" />
+        <MascotStatic size="sm" pose="calm" />
         <span className="font-display font-bold text-ink">Dashboard</span>
       </Link>
       <h1 className="font-display mb-1 text-[32px] leading-tight font-bold tracking-tight text-ink">Privacy Policy</h1>

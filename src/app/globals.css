@@ -716,6 +716,29 @@ html[data-scrolled] .chrome-title {
 .mascot-pose.gen {
   animation: gen-flicker 11s linear infinite;
 }
+/* panic pose: a nervous jitter every few seconds instead of the slow idle sway */
+.mascot[data-pose="panic"] .mascot-pose {
+  animation: mascot-jitter 3.2s ease-in-out infinite;
+}
+@keyframes mascot-jitter {
+  0%,
+  78%,
+  100% {
+    transform: none;
+  }
+  82% {
+    transform: translateX(-2%) rotate(-2deg);
+  }
+  86% {
+    transform: translateX(2%) rotate(2deg);
+  }
+  90% {
+    transform: translateX(-1.5%) rotate(-1deg);
+  }
+  94% {
+    transform: translateX(1%) rotate(1deg);
+  }
+}
 @keyframes mascot-float {
   50% {
     transform: translate3d(0, -6px, 0);

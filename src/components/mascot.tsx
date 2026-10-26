@@ -5,7 +5,8 @@ import { useRef } from "react";
 import { sfx } from "@/lib/sfx";
 
 export type MascotSize = "sm" | "md" | "lg";
-export type MascotMood = "idle" | "happy" | "alert";
+/** calm: everyday; panic: overdue work or a locked door; lost: 404, empty lists. */
+export type MascotPose = "calm" | "panic" | "lost";
 
 const SIZES: Record<MascotSize, { px: number; sizes: string }> = {
   sm: { px: 512, sizes: "48px" },
@@ -21,19 +22,30 @@ const BOUNCE: Keyframe[] = [
   { transform: "translateY(0) scale(1, 1)", offset: 1 },
 ];
 
-/**
- * Both characters are in the DOM; CSS shows the one for the current theme (no JS, no flash).
- * Psyduck is the light world, Gengar the dark one. Replace public/mascots/{psyduck,gengar}.webp to change the art.
- */
+/** Both characters are in the DOM; CSS shows the one for the current theme (no JS, no flash). */
+function Poses({ pose, px, sizes }: { pose: MascotPose; px: number; sizes: string }) {
+  return (
+    <>
+      <span className="mascot-pose psy only-light">
+        <Image src={`/mascots/psyduck-${pose}.webp`} alt="" width={px} height={px} sizes={sizes} draggable={false} unoptimized loading="eager" />
+      </span>
+      <span className="mascot-pose gen only-dark">
+        <Image src={`/mascots/gengar-${pose}.webp`} alt="" width={px} height={px} sizes={sizes} draggable={false} unoptimized loading="eager" />
+      </span>
+    </>
+  );
+}
+
+/** Psyduck is the light world, Gengar the dark one; art lives in public/mascots/{psyduck,gengar}-{pose}.webp. */
 export function Mascot({
   size = "md",
-  mood = "idle",
+  pose = "calm",
   className = "",
   onPoke,
-  label = "Linh váº­t",
+  label = "Linh vật",
 }: {
   size?: MascotSize;
-  mood?: MascotMood;
+  pose?: MascotPose;
   className?: string;
   onPoke?: () => void;
   label?: string;
@@ -57,35 +69,25 @@ export function Mascot({
       type="button"
       onClick={poke}
       data-sfx="none"
-      data-mood={mood}
+      data-pose={pose}
       aria-label={label}
       className={`mascot mascot-${size} ${className}`}
     >
       <span className="mascot-shadow" aria-hidden />
       <span className="mascot-body">
-        <span className="mascot-pose psy only-light">
-          <Image src="/mascots/psyduck.webp" alt="" width={s.px} height={s.px} sizes={s.sizes} draggable={false} unoptimized loading="eager" />
-        </span>
-        <span className="mascot-pose gen only-dark">
-          <Image src="/mascots/gengar.webp" alt="" width={s.px} height={s.px} sizes={s.sizes} draggable={false} unoptimized loading="eager" />
-        </span>
+        <Poses pose={pose} px={s.px} sizes={s.sizes} />
       </span>
     </button>
   );
 }
 
 /** Static (non-interactive) mascot for decorative spots such as empty states. */
-export function MascotStatic({ size = "sm", className = "" }: { size?: MascotSize; className?: string }) {
+export function MascotStatic({ size = "sm", pose = "lost", className = "" }: { size?: MascotSize; pose?: MascotPose; className?: string }) {
   const s = SIZES[size];
   return (
-    <span className={`mascot mascot-${size} !cursor-default ${className}`} aria-hidden>
+    <span className={`mascot mascot-${size} !cursor-default ${className}`} data-pose={pose} aria-hidden>
       <span className="mascot-body">
-        <span className="mascot-pose only-light">
-          <Image src="/mascots/psyduck.webp" alt="" width={s.px} height={s.px} sizes={s.sizes} draggable={false} unoptimized loading="eager" />
-        </span>
-        <span className="mascot-pose only-dark">
-          <Image src="/mascots/gengar.webp" alt="" width={s.px} height={s.px} sizes={s.sizes} draggable={false} unoptimized loading="eager" />
-        </span>
+        <Poses pose={pose} px={s.px} sizes={s.sizes} />
       </span>
     </span>
   );

@@ -64,6 +64,7 @@ export function HeroView({ stats }: { stats: Stats | null }) {
         <MascotSpeaker
           lines={lines}
           size="lg"
+          pose={s.overdue ? "panic" : "calm"}
           bubbleClassName="bubble-hero col-span-2 row-start-2 justify-self-end lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:self-center lg:justify-self-end"
           mascotClassName="justify-self-end col-start-2 row-start-1 max-md:[--ms:116px] md:max-lg:[--ms:160px] lg:col-start-3 lg:row-span-2"
         />

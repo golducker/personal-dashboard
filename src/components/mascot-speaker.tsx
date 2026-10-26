@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Lines } from "@/lib/mascot-lines";
-import { Mascot, type MascotSize } from "./mascot";
+import { Mascot, type MascotPose, type MascotSize } from "./mascot";
 
 /**
  * A mascot with a speech bubble. Clicking the mascot cycles through the context lines of each character.
@@ -11,11 +11,13 @@ import { Mascot, type MascotSize } from "./mascot";
 export function MascotSpeaker({
   lines,
   size = "lg",
+  pose = "calm",
   mascotClassName = "",
   bubbleClassName = "",
 }: {
   lines: Lines;
   size?: MascotSize;
+  pose?: MascotPose;
   mascotClassName?: string;
   bubbleClassName?: string;
 }) {
@@ -27,7 +29,7 @@ export function MascotSpeaker({
         <span className="only-light">{pick(lines.light)}</span>
         <span className="only-dark">{pick(lines.dark)}</span>
       </div>
-      <Mascot size={size} className={mascotClassName} onPoke={() => setI((n) => n + 1)} label="Linh vật, bấm để nghe câu khác" />
+      <Mascot size={size} pose={pose} className={mascotClassName} onPoke={() => setI((n) => n + 1)} label="Linh vật, bấm để nghe câu khác" />
     </div>
   );
 }

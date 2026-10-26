@@ -48,7 +48,7 @@ export default function LoginPage() {
             dark="Cửa đang khóa. Đoán sai thì tôi cười đấy."
             className="bubble-down"
           />
-          <Mascot size="lg" className="max-sm:[--ms:140px]" />
+          <Mascot size="lg" pose="panic" className="max-sm:[--ms:140px]" />
           <p className="font-display text-xl font-bold tracking-tight">Dashboard</p>
         </div>
         <form onSubmit={onSubmit} className={`${CARD} space-y-5 p-6`}>
