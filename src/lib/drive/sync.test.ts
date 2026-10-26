@@ -57,4 +57,19 @@ describe("drive sync persistence", () => {
     await replaceFileDeadlines(d, sourceA, "F1", []);
     expect((await db.select().from(deadlines)).map((r) => r.rowKey)).toEqual(["F1:t:2"]);
   });
+
+  it("keeps the user's progress when a sheet is synced again", async () => {
+    await upsertFiles(d, [{ id: "F2", sourceId: sourceA, name: "n2", mimeType: "m", path: "n2", parentId: null, modifiedTime: null }]);
+    await replaceFileDeadlines(d, sourceA, "F2", [pd("F2:t:1", "p one"), pd("F2:t:2", "p two")]);
+    const when = new Date("2026-10-26T01:00:00Z");
+    await db.update(deadlines).set({ progress: "ongoing", progressUpdatedAt: when }).where(eq(deadlines.rowKey, "F2:t:1"));
+
+    await replaceFileDeadlines(d, sourceA, "F2", [pd("F2:t:1", "p one edited", { done: true }), pd("F2:t:2", "p two")]);
+
+    const rows = await db.select().from(deadlines).where(eq(deadlines.fileId, "F2"));
+    const byKey = Object.fromEntries(rows.map((r) => [r.rowKey, r]));
+    expect(byKey["F2:t:1"]).toMatchObject({ title: "p one edited", done: true, progress: "ongoing" });
+    expect(byKey["F2:t:1"].progressUpdatedAt?.getTime()).toBe(when.getTime());
+    expect(byKey["F2:t:2"].progress).toBeNull();
+  });
 });

@@ -157,6 +157,9 @@ export const deadlines = pgTable("deadlines", {
   confidence: real("confidence").notNull().default(0),
   manualOverride: boolean("manual_override").notNull().default(false),
   dismissed: boolean("dismissed").notNull().default(false),
+  /** The user's own progress (todo|ongoing|done|postponed); null = not set, use the sheet's `done`. Sync never writes it. */
+  progress: text("progress"),
+  progressUpdatedAt: tstz("progress_updated_at"),
 });
 
 export const courseFolderMap = pgTable("course_folder_map", {

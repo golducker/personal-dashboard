@@ -7,6 +7,7 @@ import { groupByEvent, isOverdue, type DeadlineRow } from "@/lib/drive/view";
 import { relativeTimeVi } from "@/lib/relative-time";
 import { dayKey, timeLabel } from "@/lib/time";
 import { Empty, Panel, Pill } from "./card";
+import { DeadlineProgress } from "./deadline-progress";
 import { RecentFilesList, type RecentFileTab } from "./recent-files-list";
 
 const MAX_PER_GROUP = 8;
@@ -24,6 +25,7 @@ export function TaskLine({ r, today, showAssignee = true }: { r: DeadlineRow; to
   const overdue = isOverdue(r, today);
   return (
     <li className="flex items-start gap-3">
+      <DeadlineProgress id={r.id} title={r.title} progress={r.progress} sheetDone={r.sheetDone} />
       <span className={`w-14 shrink-0 pt-0.5 font-mono text-xs leading-5 ${overdue ? "font-semibold text-danger" : "text-ink-2"}`}>
         {r.dueAt ? dueLabel(r.dueAt) : "--"}
       </span>
@@ -42,7 +44,15 @@ export function TaskLine({ r, today, showAssignee = true }: { r: DeadlineRow; to
           </span>
         )}
       </span>
-      {r.done ? <Pill tone="accent">Xong</Pill> : overdue ? <Pill tone="danger">Quá hạn</Pill> : null}
+      {r.done ? (
+        <Pill tone="accent">Xong</Pill>
+      ) : r.progress === "postponed" ? (
+        <Pill tone="warn">Hoãn</Pill>
+      ) : overdue ? (
+        <Pill tone="danger">Quá hạn</Pill>
+      ) : r.progress === "ongoing" ? (
+        <Pill tone="accent">Đang làm</Pill>
+      ) : null}
     </li>
   );
 }

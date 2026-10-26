@@ -2,6 +2,7 @@ import { and, eq, ne, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { deadlines, files, sources } from "@/db/schema";
 import { MIME_FOLDER } from "./client";
+import { isEffectivelyDone, readProgress } from "./progress";
 import type { DeadlineRow } from "./view";
 
 type Profile = typeof sources.$inferSelect.profile;
@@ -9,14 +10,15 @@ type Profile = typeof sources.$inferSelect.profile;
 /** Every live (not dismissed) deadline with its source profile. */
 export async function loadDeadlines(profile?: Profile): Promise<DeadlineRow[]> {
   const db = await getDb();
-  return db
+  const rows = await db
     .select({
       id: deadlines.id,
       title: deadlines.title,
       dueAt: deadlines.dueAt,
       assignee: deadlines.assignee,
       status: deadlines.status,
-      done: deadlines.done,
+      sheetDone: deadlines.done,
+      progress: deadlines.progress,
       link: deadlines.link,
       groupLabel: deadlines.groupLabel,
       groupDate: deadlines.groupDate,
@@ -26,6 +28,10 @@ export async function loadDeadlines(profile?: Profile): Promise<DeadlineRow[]> {
     .from(deadlines)
     .innerJoin(sources, eq(deadlines.sourceId, sources.id))
     .where(and(eq(deadlines.dismissed, false), profile ? eq(sources.profile, profile) : undefined));
+  return rows.map(({ progress: raw, ...r }) => {
+    const progress = readProgress(raw);
+    return { ...r, progress, done: isEffectivelyDone(progress, r.sheetDone) };
+  });
 }
 
 export type RecentFile = { id: string; name: string; mimeType: string; path: string; modifiedTime: Date | null; profile: Profile };

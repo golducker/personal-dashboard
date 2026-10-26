@@ -77,7 +77,8 @@ export function parseTableTasks(input: {
       if (!last && !assignee && !status) return;
       const time = parseTimeOfDay(cell(row, col.time)) ?? "23:59";
       out.push({
-        rowKey: uniqueKey(`${input.fileId}:${tabName}:${p.i + 1}`, seen),
+        // keyed by title, not row number: inserting a row must not move the user's progress to another task
+        rowKey: uniqueKey(`${input.fileId}:${tabName}:${fold(cell(row, col.title))}`, seen),
         title: cell(row, col.title),
         dueAt: last ? new Date(localDateTime(last.day, time)) : null,
         rawText: p.text,

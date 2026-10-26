@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   applyFilters,
+  isOverdue,
   buildTimeline,
   clampWeek,
   groupByEvent,
@@ -14,7 +15,7 @@ import {
 let n = 0;
 function row(p: Partial<DeadlineRow>): DeadlineRow {
   return {
-    id: String(++n), title: `T${n}`, dueAt: null, assignee: null, status: null, done: false, link: null,
+    id: String(++n), title: `T${n}`, dueAt: null, assignee: null, status: null, done: false, progress: null, sheetDone: false, link: null,
     groupLabel: null, groupDate: null, fileId: "f", profile: "work", ...p,
   };
 }
@@ -63,6 +64,33 @@ describe("work view helpers", () => {
     expect(clampWeek("99")).toBe(2);
     expect(clampWeek("abc")).toBe(0);
     expect(clampWeek(undefined)).toBe(0);
+  });
+});
+
+describe("progress in views", () => {
+  const today = "2026-10-26";
+  const late = at("2026-10-24");
+
+  it("does not flag postponed tasks as overdue", () => {
+    expect(isOverdue(row({ dueAt: late }), today)).toBe(true);
+    expect(isOverdue(row({ dueAt: late, progress: "postponed" }), today)).toBe(false);
+    expect(isOverdue(row({ dueAt: late, progress: "ongoing" }), today)).toBe(true);
+    expect(buildTimeline([row({ dueAt: late, progress: "postponed" })], "2026-10-25", 7, today).overdue).toEqual([]);
+  });
+
+  it("filters on effective progress", () => {
+    const rows = [
+      row({ title: "plain" }),
+      row({ title: "sheet done", sheetDone: true, done: true }),
+      row({ title: "going", progress: "ongoing" }),
+      row({ title: "later", progress: "postponed" }),
+      row({ title: "reopened", progress: "todo", sheetDone: true }),
+    ];
+    const f = (status: string) => applyFilters(rows, { status }).map((r) => r.title);
+    expect(f("p:todo")).toEqual(["plain", "reopened"]);
+    expect(f("p:ongoing")).toEqual(["going"]);
+    expect(f("p:postponed")).toEqual(["later"]);
+    expect(f("done")).toEqual(["sheet done"]);
   });
 });
 

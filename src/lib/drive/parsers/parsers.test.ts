@@ -124,7 +124,7 @@ describe("parseTableTasks", () => {
     expect(rows[3].dueAt?.toISOString()).toBe("2026-10-20T16:59:00.000Z");
     expect(rows[4].dueAt?.toISOString()).toBe("2026-10-18T16:59:00.000Z");
     expect(rows[3].done).toBe(true);
-    expect(rows[4].rowKey).toBe("S1:Lịch đăng bài:3");
+    expect(rows[4].rowKey).toBe("S1:Lịch đăng bài:bai 2");
   });
 
   it("matches tabs without accents and ignores unrelated sheets", () => {

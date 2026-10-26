@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
+import { ToastHost } from "@/components/toast";
 import "./globals.css";
 
 // Be Vietnam Pro is drawn for Vietnamese diacritics; JetBrains Mono is only for times and scores.
@@ -29,7 +30,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi" className={`${body.variable} ${num.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">{children}
+        <ToastHost />
+      </body>
     </html>
   );
 }

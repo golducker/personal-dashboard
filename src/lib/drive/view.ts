@@ -1,4 +1,5 @@
 import { addDays, dayKey } from "@/lib/time";
+import { effectiveProgress, type ProgressState } from "./progress";
 import { fold } from "./text";
 
 export type DeadlineRow = {
@@ -7,7 +8,12 @@ export type DeadlineRow = {
   dueAt: Date | null;
   assignee: string | null;
   status: string | null;
+  /** Effective done: the user's progress if set, otherwise the sheet's. */
   done: boolean;
+  /** The user's own progress; null = not set. */
+  progress: ProgressState | null;
+  /** Done according to the sheet. */
+  sheetDone: boolean;
   link: string | null;
   groupLabel: string | null;
   groupDate: Date | null;
@@ -25,7 +31,7 @@ const dueDay = (r: DeadlineRow) => (r.dueAt ? dayKey(r.dueAt) : null);
 
 export function isOverdue(r: DeadlineRow, today: string): boolean {
   const d = dueDay(r);
-  return !r.done && d !== null && d < today;
+  return !r.done && r.progress !== "postponed" && d !== null && d < today;
 }
 
 const byDue = (a: DeadlineRow, b: DeadlineRow) =>
@@ -68,7 +74,8 @@ export function applyFilters(rows: DeadlineRow[], f: WorkFilters): DeadlineRow[]
     if (f.assignee && !splitAssignees(r.assignee).includes(f.assignee)) return false;
     if (f.status === "open" && r.done) return false;
     if (f.status === "done" && !r.done) return false;
-    if (f.status && f.status !== "open" && f.status !== "done" && fold(r.status ?? "") !== fold(f.status)) return false;
+    if (f.status?.startsWith("p:") && effectiveProgress(r.progress, r.sheetDone) !== f.status.slice(2)) return false;
+    if (f.status && f.status !== "open" && f.status !== "done" && !f.status.startsWith("p:") && fold(r.status ?? "") !== fold(f.status)) return false;
     return true;
   });
 }

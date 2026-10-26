@@ -81,7 +81,7 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
                 name: "status",
                 label: "Trạng thái",
                 value: params.status,
-                options: [["open", "Chưa xong"], ["done", "Đã xong"], ...statuses.map((s) => [s, s] as const)],
+                options: [["open", "Chưa xong"], ["done", "Đã xong"], ["p:todo", "Chưa làm"], ["p:ongoing", "Đang làm"], ["p:postponed", "Hoãn"], ...statuses.map((s) => [s, s] as const)],
               },
             ].map((f) => (
               <label key={f.name} className="min-w-36 flex-1 space-y-1 text-xs font-medium text-ink-2">
