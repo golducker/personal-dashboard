@@ -2,7 +2,9 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { deadlines, files, settings, sources, syncRuns } from "@/db/schema";
 import { GoogleApiError, GoogleNotConnectedError } from "@/lib/google";
+import { sendPushSafe } from "@/lib/push";
 import { escapeHtml, sendTelegram } from "@/lib/telegram";
+import { sendDeadlineReminders } from "./reminders";
 import {
   MIME_FOLDER,
   MIME_SHEET,
@@ -357,6 +359,8 @@ export async function replaceFileDeadlines(
           groupLabel: sql`excluded.group_label`,
           groupDate: sql`excluded.group_date`,
           sourceId: sql`excluded.source_id`,
+          // a moved due date is a new reminder
+          remindedAt: sql`case when ${deadlines.dueAt} is distinct from excluded.due_at then null else ${deadlines.remindedAt} end`,
         },
         setWhere: eq(deadlines.manualOverride, false),
       });
@@ -518,9 +522,20 @@ export async function runDriveSync(opts: { onlySourceId?: string; budgetMs?: num
     error: status === "error" ? code : null,
   });
   if (status === "error" && prev?.status === "success") {
-    await sendTelegram(`⚠️ <b>Drive sync lỗi</b>: ${escapeHtml(code)}`);
+    await Promise.all([
+      sendTelegram(`⚠️ <b>Drive sync lỗi</b>: ${escapeHtml(code)}`),
+      sendPushSafe({ title: "Đồng bộ lỗi", body: `Drive: ${code}`, url: "/health", tag: "sync-drive" }),
+    ]);
   } else if (status === "success" && prev?.status === "error") {
-    await sendTelegram("✅ <b>Drive sync hồi phục</b>");
+    await Promise.all([
+      sendTelegram("✅ <b>Drive sync hồi phục</b>"),
+      sendPushSafe({ title: "Đồng bộ đã hồi phục", body: "Drive hoạt động lại bình thường.", url: "/health", tag: "sync-drive" }),
+    ]);
+  }
+  try {
+    await sendDeadlineReminders(db);
+  } catch {
+    /* reminders are best-effort */
   }
   return { status: result.ok ? 200 : 502, result };
 }

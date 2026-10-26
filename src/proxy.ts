@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth";
 
 // Next 16: "middleware" was renamed to "proxy".
-const PUBLIC_PATHS = ["/login", "/privacy","/api/auth/login", "/api/auth/logout", "/manifest.webmanifest", "/favicon.ico"];
+// /sw.js and /offline must stay reachable after the session expires (worker updates, offline fallback).
+const PUBLIC_PATHS = ["/login", "/privacy", "/offline", "/sw.js", "/api/auth/login", "/api/auth/logout", "/manifest.webmanifest", "/favicon.ico"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

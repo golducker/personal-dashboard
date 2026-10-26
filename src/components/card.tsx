@@ -1,17 +1,19 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Loaded } from "@/lib/today";
+import { MascotStatic } from "./mascot";
 
-// Shape rule: panels rounded-2xl, controls/inputs rounded-lg, pills rounded-full.
-export const CARD = "rounded-2xl border border-line bg-surface shadow-panel";
+// Shape rule: panels 20px (.card in globals.css), controls rounded-xl, pills rounded-full.
+// .card is glass in the dark world and a warm paper card in the light world; .btn gets ripple + press scale (GlobalFx).
+export const CARD = "card";
 const BTN_BASE =
-  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50";
+  "btn inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold disabled:pointer-events-none disabled:opacity-50 md:min-h-9 md:px-3.5 md:py-1.5";
 export const BTN = `${BTN_BASE} border border-line-strong text-ink hover:bg-surface-2`;
-export const BTN_PRIMARY = `${BTN_BASE} bg-accent text-accent-ink hover:opacity-90`;
+export const BTN_PRIMARY = `${BTN_BASE} btn-primary bg-accent text-accent-ink`;
 export const BTN_GHOST = `${BTN_BASE} text-ink-2 hover:bg-surface-2 hover:text-ink`;
-export const BTN_DANGER = `${BTN_BASE} bg-danger text-surface hover:opacity-90`;
+export const BTN_DANGER = `${BTN_BASE} bg-danger text-surface`;
 export const INPUT =
-  "w-full rounded-lg border border-line-strong bg-surface px-3 py-2 text-sm text-ink outline-none transition placeholder:text-ink-3 focus:border-accent focus:ring-2 focus:ring-accent-soft";
+  "w-full rounded-xl border border-line-strong bg-surface px-3.5 py-2.5 text-base text-ink outline-none transition placeholder:text-ink-3 focus:border-accent-strong focus:ring-2 focus:ring-accent-soft md:py-2 md:text-sm";
 
 export function Panel({
   title,
@@ -29,11 +31,15 @@ export function Panel({
   children: ReactNode;
 }) {
   return (
-    <section className={`${CARD} flex min-w-0 flex-col ${className}`}>
-      <header className="flex items-start gap-2.5 px-5 pt-4 pb-3">
-        {icon && <span className="mt-0.5 text-ink-3 [&>svg]:size-[18px]">{icon}</span>}
-        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2">
-          <h2 className="text-[15px] font-semibold tracking-tight">{title}</h2>
+    <section className={`${CARD} reveal flex min-w-0 flex-col ${className}`}>
+      <header className="flex items-start gap-2.5 px-5 pt-5 pb-3">
+        {icon && (
+          <span className="mt-px grid size-7 shrink-0 place-items-center rounded-lg bg-accent-soft text-accent-strong [&>svg]:size-[17px]">
+            {icon}
+          </span>
+        )}
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 pt-0.5">
+          <h2 className="font-display text-[17px] leading-6 font-bold tracking-tight">{title}</h2>
           {meta && <span className="text-sm text-ink-3">{meta}</span>}
         </div>
         {action && <div className="ml-auto shrink-0">{action}</div>}
@@ -46,7 +52,7 @@ export function Panel({
 export function Pill({ tone = "neutral", children }: { tone?: "neutral" | "accent" | "danger" | "warn"; children: ReactNode }) {
   const cls = {
     neutral: "bg-surface-2 text-ink-2",
-    accent: "bg-accent-soft text-accent",
+    accent: "bg-accent-soft text-accent-deep",
     danger: "bg-danger-soft text-danger",
     warn: "bg-warn-soft text-warn",
   }[tone];
@@ -54,7 +60,12 @@ export function Pill({ tone = "neutral", children }: { tone?: "neutral" | "accen
 }
 
 export function Empty({ children }: { children: ReactNode }) {
-  return <p className="rounded-xl bg-surface-2 px-4 py-6 text-center text-sm text-ink-2">{children}</p>;
+  return (
+    <div className="flex items-center gap-3 rounded-2xl bg-surface-2 px-4 py-5 text-sm text-ink-2">
+      <MascotStatic size="sm" className="shrink-0" />
+      <p className="min-w-0 flex-1">{children}</p>
+    </div>
+  );
 }
 
 /** Placeholder with the rough shape of a panel while its data loads. */
@@ -64,10 +75,10 @@ export function PanelSkeleton({ title, rows = 3, className = "" }: { title: stri
       <div className="space-y-3" aria-busy="true" aria-label={`Đang tải ${title.toLowerCase()}`}>
         {Array.from({ length: rows }, (_, i) => (
           <div key={i} className="flex items-center gap-3">
-            <div className="h-9 w-12 rounded-lg bg-surface-2 motion-safe:animate-pulse" />
+            <div className="skeleton h-9 w-12 rounded-lg" />
             <div className="flex-1 space-y-1.5">
-              <div className="h-3 w-3/5 rounded bg-surface-2 motion-safe:animate-pulse" />
-              <div className="h-3 w-2/5 rounded bg-surface-2 motion-safe:animate-pulse" />
+              <div className="skeleton h-3 w-3/5 rounded" />
+              <div className="skeleton h-3 w-2/5 rounded" />
             </div>
           </div>
         ))}
@@ -94,9 +105,14 @@ export function SourceProblem({
           ? `Chưa cấu hình ${name}`
           : `Không tải được dữ liệu ${name}`;
   return (
-    <div className="space-y-3 rounded-xl bg-surface-2 p-4 text-sm">
+    <div className="space-y-3 rounded-2xl bg-surface-2 p-4 text-sm">
       <p className="font-medium">{title}</p>
-      {failure.kind === "error" && <p className="break-words text-danger">{failure.message}</p>}
+      {failure.kind === "error" && (
+        // Raw API errors can be long JSON; show a readable line and keep the detail in the tooltip.
+        <p className="line-clamp-2 break-words text-danger" title={failure.message}>
+          {/401|unauthori[sz]ed/i.test(failure.message) ? "Token không hợp lệ hoặc đã bị thu hồi." : failure.message}
+        </p>
+      )}
       {failure.kind === "not_configured" && <p className="text-ink-2">Thêm TODOIST_API_TOKEN vào biến môi trường.</p>}
       <div className="flex flex-wrap items-center gap-2">
         {connect && (

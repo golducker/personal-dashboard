@@ -2,10 +2,13 @@
 
 import { Check } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { sfx } from "@/lib/sfx";
+import { burstFrom } from "@/lib/vfx";
 import type { TaskView } from "@/lib/today";
 import { call } from "./api-client";
 import { Empty } from "./card";
+import { dismissToast, showToast } from "./toast";
 
 // Todoist priority (4 = urgent) mapped onto the semantic palette.
 const RING = {
@@ -15,13 +18,14 @@ const RING = {
   1: "border-line-strong",
 } as const;
 
-function Row({ task, overdue, onClose }: { task: TaskView; overdue?: boolean; onClose: (t: TaskView) => void }) {
+function Row({ task, overdue, onClose }: { task: TaskView; overdue?: boolean; onClose: (t: TaskView, el: Element) => void }) {
   return (
-    <li className="group flex items-start gap-3 rounded-xl px-2 py-2.5 transition hover:bg-surface-2">
+    <li className="reveal group flex items-start gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-surface-2">
       <button
-        onClick={() => onClose(task)}
+        onClick={(e) => onClose(task, e.currentTarget)}
         aria-label={`Hoàn thành: ${task.content}`}
-        className={`mt-px grid size-5 shrink-0 place-items-center rounded-full border-2 text-transparent transition hover:text-ink-2 active:scale-90 ${RING[task.priority]}`}
+        data-sfx="none"
+        className={`relative mt-px grid size-5 shrink-0 place-items-center rounded-full border-2 text-transparent transition-[color,transform] before:absolute before:-inset-3 before:content-[''] hover:text-ink-2 active:scale-90 ${RING[task.priority]}`}
       >
         <Check size={11} weight="bold" />
       </button>
@@ -42,14 +46,7 @@ function Row({ task, overdue, onClose }: { task: TaskView; overdue?: boolean; on
 export function TaskList({ overdue, today, later }: { overdue: TaskView[]; today: TaskView[]; later: TaskView[] }) {
   const router = useRouter();
   const [closed, setClosed] = useState<Set<string>>(new Set());
-  const [toast, setToast] = useState<TaskView | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 6000);
-    return () => clearTimeout(t);
-  }, [toast]);
 
   const mark = (id: string, isClosed: boolean) =>
     setClosed((prev) => {
@@ -59,26 +56,25 @@ export function TaskList({ overdue, today, later }: { overdue: TaskView[]; today
       return next;
     });
 
-  async function onClose(task: TaskView) {
+  async function onUndo(task: TaskView) {
+    const r = await call("POST", `/api/todoist/tasks/${task.id}/reopen`);
+    if (!r.ok) return setError(r.error);
+    mark(task.id, false);
+    router.refresh();
+  }
+
+  async function onClose(task: TaskView, el: Element) {
+    burstFrom(el);
+    sfx.success();
     mark(task.id, true);
-    setToast(task);
+    showToast({ message: `Đã xong: ${task.content}`, action: { label: "Hoàn tác", run: () => void onUndo(task) } });
     setError(null);
     const r = await call("POST", `/api/todoist/tasks/${task.id}/close`);
     if (!r.ok) {
       mark(task.id, false);
-      setToast(null);
+      dismissToast();
       return setError(r.error);
     }
-    router.refresh();
-  }
-
-  async function onUndo() {
-    if (!toast) return;
-    const task = toast;
-    setToast(null);
-    const r = await call("POST", `/api/todoist/tasks/${task.id}/reopen`);
-    if (!r.ok) return setError(r.error);
-    mark(task.id, false);
     router.refresh();
   }
 
@@ -113,17 +109,6 @@ export function TaskList({ overdue, today, later }: { overdue: TaskView[]; today
             ))}
           </ul>
         </details>
-      )}
-      {toast && (
-        <div
-          role="status"
-          className="fixed inset-x-4 bottom-4 z-20 mx-auto flex max-w-sm items-center justify-between gap-3 rounded-xl bg-ink px-4 py-3 text-sm text-bg shadow-panel"
-        >
-          <span className="truncate">Đã xong: {toast.content}</span>
-          <button onClick={onUndo} className="shrink-0 rounded-lg px-2.5 py-1 font-medium underline-offset-2 hover:underline">
-            Hoàn tác
-          </button>
-        </div>
       )}
     </div>
   );

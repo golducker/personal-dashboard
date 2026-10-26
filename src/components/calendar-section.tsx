@@ -1,20 +1,14 @@
 import { CalendarBlank } from "@phosphor-icons/react/dist/ssr";
-import { listCalendars, listEvents } from "@/lib/calendar";
-import { addDays, dayKey, formatDayKey, groupByDay, startOfDay } from "@/lib/time";
-import { load, toEventView } from "@/lib/today";
+import { getCalendarWindow } from "@/lib/home-data";
+import { dayKey, formatDayKey, groupByDay } from "@/lib/time";
+import { toEventView } from "@/lib/today";
 import { AddEventForm } from "./add-event-form";
 import { Empty, Panel, SourceProblem } from "./card";
 import { EventItem } from "./event-item";
 
 export async function CalendarSection({ className }: { className?: string }) {
   const today = dayKey(new Date());
-  const result = await load(async () => {
-    const [events, calendars] = await Promise.all([
-      listEvents(startOfDay(today).toISOString(), startOfDay(addDays(today, 8)).toISOString()),
-      listCalendars(),
-    ]);
-    return { events, calendars };
-  });
+  const result = await getCalendarWindow(today);
 
   if (!result.ok) {
     return (

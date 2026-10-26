@@ -13,7 +13,7 @@ function NoData() {
   return (
     <Empty>
       Chưa có dữ liệu FTUgate.{" "}
-      <Link href="/health" className="font-medium text-accent underline-offset-2 hover:underline">
+      <Link href="/health" className="font-medium text-accent-strong underline-offset-2 hover:underline">
         Xem tình trạng đồng bộ
       </Link>
     </Empty>
@@ -36,7 +36,7 @@ export async function WeekSchedule({ className }: { className?: string }) {
           {days.map((d) => (
             <div key={d.day} className={`rounded-xl p-3.5 ${d.isToday ? "bg-accent-soft" : "bg-surface-2"}`}>
               <p className="mb-2 flex items-center gap-2 text-sm">
-                <span className={`font-semibold ${d.isToday ? "text-accent" : ""}`}>{d.isToday ? "Hôm nay" : d.weekday}</span>
+                <span className={`font-semibold ${d.isToday ? "text-accent-strong" : ""}`}>{d.isToday ? "Hôm nay" : d.weekday}</span>
                 <span className="text-ink-3">{d.day.slice(8, 10)}/{d.day.slice(5, 7)}</span>
               </p>
               {d.classes.length === 0 ? (
@@ -143,7 +143,7 @@ function Stat({ label, value, strong }: { label: string; value: string; strong?:
   return (
     <div className="space-y-1">
       <p className="text-xs text-ink-2">{label}</p>
-      <p className={`font-mono leading-none font-semibold tracking-tight ${strong ? "text-4xl text-accent" : "text-2xl"}`}>{value}</p>
+      <p className={`font-mono leading-none font-semibold tracking-tight ${strong ? "text-4xl text-accent-strong" : "text-2xl"}`}>{value}</p>
     </div>
   );
 }

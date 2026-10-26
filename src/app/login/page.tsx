@@ -1,9 +1,11 @@
 "use client";
 
-import { SquaresFour } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { BTN_PRIMARY, CARD, INPUT } from "@/components/card";
+import { Mascot } from "@/components/mascot";
+import { Bubble } from "@/components/mascot-speaker";
+import { sfx } from "@/lib/sfx";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,8 +29,10 @@ export default function LoginPage() {
         return;
       }
       const data = await res.json().catch(() => ({}));
+      sfx.error();
       setError(data.error ?? "Đăng nhập thất bại.");
     } catch {
+      sfx.error();
       setError("Không thể kết nối tới máy chủ.");
     } finally {
       setLoading(false);
@@ -36,17 +40,20 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-[100dvh] flex-1 items-center justify-center px-4 py-16">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="flex items-center gap-2.5 font-semibold tracking-tight">
-          <span className="grid size-8 place-items-center rounded-lg bg-accent text-accent-ink">
-            <SquaresFour size={18} weight="bold" />
-          </span>
-          Dashboard
+    <main className="flex min-h-[100dvh] flex-1 items-center justify-center px-4 pt-[calc(var(--safe-top)+2rem)] pb-[calc(var(--safe-bottom)+2rem)]">
+      <div className="w-full max-w-sm space-y-5">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Bubble
+            light="Quạc… mã truy cập là gì nhỉ? Tui quên rồi."
+            dark="Cửa đang khóa. Đoán sai thì tôi cười đấy."
+            className="bubble-down"
+          />
+          <Mascot size="lg" className="max-sm:[--ms:140px]" />
+          <p className="font-display text-xl font-bold tracking-tight">Dashboard</p>
         </div>
         <form onSubmit={onSubmit} className={`${CARD} space-y-5 p-6`}>
           <div className="space-y-1">
-            <h1 className="text-xl font-semibold tracking-tight">Đăng nhập</h1>
+            <h1 className="font-display text-2xl font-bold tracking-tight">Đăng nhập</h1>
             <p className="text-sm text-ink-2">Nhập mã truy cập để mở bảng điều khiển.</p>
           </div>
           <label className="block space-y-1.5 text-sm">
@@ -66,12 +73,12 @@ export default function LoginPage() {
               </span>
             )}
           </label>
-          <button type="submit" disabled={loading || passcode.length === 0} className={`${BTN_PRIMARY} w-full py-2.5`}>
+          <button type="submit" disabled={loading || passcode.length === 0} className={`${BTN_PRIMARY} w-full`}>
             {loading ? "Đang kiểm tra..." : "Đăng nhập"}
           </button>
         </form>
         <p className="text-center text-xs text-ink-3">
-          <a href="/privacy" className="underline-offset-2 hover:text-ink-2 hover:underline">
+          <a href="/privacy" className="inline-flex min-h-11 items-center underline-offset-2 hover:text-ink-2 hover:underline">
             Privacy Policy
           </a>
         </p>

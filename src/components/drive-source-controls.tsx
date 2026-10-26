@@ -293,7 +293,7 @@ export function DriveSourceItem({ source }: { source: SourceView }) {
         </div>
       )}
       {message && (
-        <p role="status" className={`text-sm ${message.ok ? "text-accent" : "text-danger"}`}>
+        <p role="status" className={`text-sm ${message.ok ? "text-accent-strong" : "text-danger"}`}>
           {message.text}
         </p>
       )}

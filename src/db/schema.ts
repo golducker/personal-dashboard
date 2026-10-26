@@ -160,6 +160,8 @@ export const deadlines = pgTable("deadlines", {
   /** The user's own progress (todo|ongoing|done|postponed); null = not set, use the sheet's `done`. Sync never writes it. */
   progress: text("progress"),
   progressUpdatedAt: tstz("progress_updated_at"),
+  /** Set when the 24h reminder push went out; reset when the sheet moves `due_at`. */
+  remindedAt: tstz("reminded_at"),
 });
 
 export const courseFolderMap = pgTable("course_folder_map", {
@@ -185,6 +187,9 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   endpoint: text("endpoint").notNull().unique(),
   keys: jsonb("keys").notNull(),
   createdAt: tstz("created_at").notNull().defaultNow(),
+  userAgent: text("user_agent"),
+  lastOkAt: tstz("last_ok_at"),
+  failures: integer("failures").notNull().default(0),
 });
 
 export const settings = pgTable("settings", {

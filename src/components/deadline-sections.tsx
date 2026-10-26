@@ -2,7 +2,8 @@ import Link from "next/link";
 import { CalendarCheck, FolderOpen } from "@phosphor-icons/react/dist/ssr";
 import { fileUrl } from "@/lib/drive/client";
 import { PROFILE_LABELS } from "@/lib/drive/sources";
-import { loadDeadlines, loadRecentFiles } from "@/lib/drive/queries";
+import { loadRecentFiles } from "@/lib/drive/queries";
+import { getDeadlines } from "@/lib/home-data";
 import { groupByEvent, isOverdue, type DeadlineRow } from "@/lib/drive/view";
 import { relativeTimeVi } from "@/lib/relative-time";
 import { dayKey, timeLabel } from "@/lib/time";
@@ -24,7 +25,7 @@ export function dueLabel(d: Date | null): string {
 export function TaskLine({ r, today, showAssignee = true }: { r: DeadlineRow; today: string; showAssignee?: boolean }) {
   const overdue = isOverdue(r, today);
   return (
-    <li className="flex items-start gap-3">
+    <li className="reveal flex items-start gap-3">
       <DeadlineProgress id={r.id} title={r.title} progress={r.progress} sheetDone={r.sheetDone} />
       <span className={`w-14 shrink-0 pt-0.5 font-mono text-xs leading-5 ${overdue ? "font-semibold text-danger" : "text-ink-2"}`}>
         {r.dueAt ? dueLabel(r.dueAt) : "--"}
@@ -59,7 +60,7 @@ export function TaskLine({ r, today, showAssignee = true }: { r: DeadlineRow; to
 
 export async function DeadlinePanel({ className, showDone }: { className?: string; showDone: boolean }) {
   const today = dayKey(new Date());
-  const all = await loadDeadlines();
+  const all = await getDeadlines();
   const mlsv = all.filter((r) => r.profile === "mlsv");
   const work = all.filter((r) => r.profile === "work" && !r.done && r.dueAt && dayKey(r.dueAt) <= today);
   const { groups, undated } = groupByEvent(mlsv, showDone);
@@ -70,7 +71,7 @@ export async function DeadlinePanel({ className, showDone }: { className?: strin
 
   const toggle =
     hiddenDone > 0 ? (
-      <Link href={showDone ? "/" : "/?done=1"} className="text-xs font-medium text-accent hover:underline">
+      <Link href={showDone ? "/" : "/?done=1"} className="text-xs font-medium text-accent-strong hover:underline">
         {showDone ? "Ẩn việc đã xong" : `Hiện ${hiddenDone} việc đã xong`}
       </Link>
     ) : undefined;
@@ -86,7 +87,7 @@ export async function DeadlinePanel({ className, showDone }: { className?: strin
       {all.length === 0 ? (
         <Empty>
           Chưa có deadline từ Drive.{" "}
-          <Link href="/settings" className="font-medium text-accent underline-offset-2 hover:underline">
+          <Link href="/settings" className="font-medium text-accent-strong underline-offset-2 hover:underline">
             Thêm nguồn Drive
           </Link>
         </Empty>
@@ -98,7 +99,7 @@ export async function DeadlinePanel({ className, showDone }: { className?: strin
                 <span className="font-semibold">Công việc</span>
                 {overdueWork.length > 0 && <Pill tone="danger">{overdueWork.length} quá hạn</Pill>}
                 {todayWork.length > 0 && <Pill tone="warn">{todayWork.length} hôm nay</Pill>}
-                <Link href="/work" className="ml-auto text-xs font-medium text-accent hover:underline">
+                <Link href="/work" className="ml-auto text-xs font-medium text-accent-strong hover:underline">
                   Xem tất cả
                 </Link>
               </p>

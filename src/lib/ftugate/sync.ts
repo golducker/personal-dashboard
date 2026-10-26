@@ -2,6 +2,7 @@ import { z } from "zod";
 import { desc, eq, inArray, isNull } from "drizzle-orm";
 import { getDb } from "@/db";
 import { FTU_KINDS, ftuSnapshots, gradeEvents, syncRuns, type FtuKind } from "@/db/schema";
+import { sendPushSafe } from "@/lib/push";
 import { escapeHtml, sendTelegram } from "@/lib/telegram";
 import { diffGrades, gradeOf, type GradeChange } from "./grades-diff";
 import { normalizeGrades, type NormalizedGrades } from "./grades";
@@ -105,6 +106,13 @@ export function buildGradesMessage(
   return text;
 }
 
+/** Short plain-text course list for the push body. */
+export function buildGradesPushBody(events: { courseName: string }[]): string {
+  const names = [...new Set(events.map((e) => e.courseName))];
+  const shown = names.slice(0, 3).join(", ");
+  return names.length > 3 ? `${shown} và ${names.length - 3} môn khác` : shown;
+}
+
 function latestCumGpa4(g: NormalizedGrades | null): number | null {
   if (!g) return null;
   // semesters are newest first; the current one has no GPA yet
@@ -133,7 +141,10 @@ async function notifyGrades(db: Db, changes: GradeChange[], latest: NormalizedGr
   const pending = await db.select().from(gradeEvents).where(isNull(gradeEvents.notifiedAt));
   if (pending.length === 0) return { newGrades, notified: 0 };
 
-  const sent = await sendTelegram(buildGradesMessage(pending, latestCumGpa4(latest)));
+  const [sent] = await Promise.all([
+    sendTelegram(buildGradesMessage(pending, latestCumGpa4(latest))),
+    sendPushSafe({ title: "Có điểm mới", body: buildGradesPushBody(pending), url: "/", tag: "grades" }),
+  ]);
   if (!sent) return { newGrades, notified: 0 };
   await db
     .update(gradeEvents)
@@ -156,7 +167,10 @@ export async function handleFtugate(body: FtugateBody): Promise<{ status: number
   if ("error" in body) {
     await writeRun(db, startedAt, "error", 0, body.error);
     if (prevRun?.status === "success") {
-      await sendTelegram(`⚠️ <b>FTUgate sync lỗi</b>: ${escapeHtml(body.error)}`);
+      await Promise.all([
+        sendTelegram(`⚠️ <b>FTUgate sync lỗi</b>: ${escapeHtml(body.error)}`),
+        sendPushSafe({ title: "Đồng bộ lỗi", body: `FTUgate: ${body.error}`, url: "/health", tag: "sync-ftugate" }),
+      ]);
     }
     return { status: 200, result };
   }
@@ -205,14 +219,20 @@ export async function handleFtugate(body: FtugateBody): Promise<{ status: number
     result.ok = false;
     await writeRun(db, startedAt, "error", result.stored.length, "bad_response");
     if (prevRun?.status === "success") {
-      await sendTelegram(`⚠️ <b>FTUgate sync lỗi</b>: bad_response`);
+      await Promise.all([
+        sendTelegram(`⚠️ <b>FTUgate sync lỗi</b>: bad_response`),
+        sendPushSafe({ title: "Đồng bộ lỗi", body: "FTUgate: bad_response", url: "/health", tag: "sync-ftugate" }),
+      ]);
     }
     return { status: 422, result };
   }
 
   await writeRun(db, startedAt, "success", result.stored.length);
   if (prevRun?.status === "error") {
-    await sendTelegram("✅ <b>FTUgate sync hồi phục</b>");
+    await Promise.all([
+      sendTelegram("✅ <b>FTUgate sync hồi phục</b>"),
+      sendPushSafe({ title: "Đồng bộ đã hồi phục", body: "FTUgate hoạt động lại bình thường.", url: "/health", tag: "sync-ftugate" }),
+    ]);
   }
   return { status: 200, result };
 }

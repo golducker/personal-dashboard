@@ -1,6 +1,6 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { syncRuns, type SyncSource } from "@/db/schema";
+import { pushSubscriptions, syncRuns, type SyncSource } from "@/db/schema";
 import { getConnection } from "./google";
 import { SOURCE_IDS, SOURCE_LABELS, isConfigured } from "./sources";
 
@@ -31,6 +31,12 @@ export function decideStatus(opts: {
   return configured ? "never_synced" : "not_configured";
 }
 
+/** Web push has no sync runs: it is healthy once the keys are set and a device subscribed. */
+export function decideWebpushStatus(configured: boolean, subscriptions: number): HealthStatus {
+  if (!configured) return "not_configured";
+  return subscriptions > 0 ? "ok" : "never_synced";
+}
+
 export async function getSourceHealth(): Promise<SourceHealth[]> {
   const db = await getDb();
   const connected = !!(await getConnection().catch(() => null));
@@ -49,6 +55,18 @@ export async function getSourceHealth(): Promise<SourceHealth[]> {
         .orderBy(desc(syncRuns.startedAt))
         .limit(1);
       const configured = isConfigured(source);
+      if (source === "webpush") {
+        const [{ n }] = await db.select({ n: count() }).from(pushSubscriptions);
+        return {
+          source,
+          label: SOURCE_LABELS[source],
+          configured,
+          status: decideWebpushStatus(configured, n),
+          lastSuccessAt: null,
+          lastError: null,
+          lastRunAt: null,
+        };
+      }
       const status = decideStatus({
         configured,
         needsConnection: GOOGLE_SOURCES.includes(source),

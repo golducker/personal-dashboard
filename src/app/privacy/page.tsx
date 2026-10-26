@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { MascotStatic } from "@/components/mascot";
 
 export const metadata: Metadata = { title: "Privacy Policy · Personal Dashboard" };
 
@@ -7,8 +9,12 @@ const CONTACT = "lethinh512.stu@gmail.com";
 // Public page: Google requires a privacy policy URL before the OAuth app can be published.
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-12 text-sm leading-6 text-ink-2">
-      <h1 className="mb-1 text-2xl font-semibold text-ink">Privacy Policy</h1>
+    <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-[calc(var(--safe-top)+2rem)] pb-[calc(var(--safe-bottom)+3rem)] text-sm leading-6 text-ink-2">
+      <Link href="/" className="mb-8 inline-flex min-h-11 items-center gap-2 text-ink-3 hover:text-ink">
+        <MascotStatic size="sm" />
+        <span className="font-display font-bold text-ink">Dashboard</span>
+      </Link>
+      <h1 className="font-display mb-1 text-[32px] leading-tight font-bold tracking-tight text-ink">Privacy Policy</h1>
       <p className="mb-8 text-ink-3">Personal Dashboard · Last updated 26 October 2026</p>
 
       <Section title="What this app is">
@@ -76,8 +82,8 @@ export default function PrivacyPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mb-6">
-      <h2 className="mb-2 text-base font-semibold text-ink">{title}</h2>
+    <section className="card mb-4 p-5">
+      <h2 className="font-display mb-2 text-lg font-bold tracking-tight text-ink">{title}</h2>
       <div>{children}</div>
     </section>
   );

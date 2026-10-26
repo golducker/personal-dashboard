@@ -21,17 +21,20 @@ export default async function HealthPage() {
   const problems = sources.filter((s) => s.status === "error" || s.status === "not_connected").length;
 
   return (
-    <div className="mx-auto w-full max-w-3xl flex-1 px-4 pb-16 sm:px-6">
+    <div className="page-pad mx-auto w-full max-w-3xl flex-1 px-4 sm:px-6">
       <AppHeader title="Tình trạng" subtitle="Nguồn dữ liệu và lần đồng bộ gần nhất." />
       <Panel title="Nguồn dữ liệu" icon={<Pulse />} meta={problems ? `${problems} cần xử lý` : "Mọi thứ ổn"}>
         <ul className="-mx-2 space-y-1">
           {sources.map((s) => {
             const badge = BADGE[s.status];
             return (
-              <li key={s.source} className="rounded-xl px-2 py-3 hover:bg-surface-2">
+              <li key={s.source} className="reveal rounded-xl px-2 py-3 transition-colors hover:bg-surface-2">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">{s.label}</p>
+                    <p className="flex items-center gap-2 text-sm font-semibold">
+                      <span aria-hidden className={`size-2 shrink-0 rounded-full ${s.status === "ok" ? "bg-accent" : s.status === "error" ? "bg-danger" : s.status === "running" || s.status === "not_connected" ? "bg-warn" : "bg-ink-3"}`} />
+                      {s.label}
+                    </p>
                     <p className="text-xs text-ink-2">
                       Thành công gần nhất: {s.lastSuccessAt ? relativeTimeVi(s.lastSuccessAt, now) : "chưa có"}
                     </p>

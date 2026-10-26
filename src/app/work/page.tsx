@@ -38,12 +38,12 @@ function ProgressList({ items }: { items: Progress[] }) {
         <li key={p.name}>
           <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
             <span className="min-w-0 truncate font-medium">{p.name}</span>
-            <span className="shrink-0 font-mono text-xs text-ink-2">
+            <span className="shrink-0 font-mono text-xs text-ink-2 tabular-nums">
               {p.done}/{p.total} · {p.percent}%
             </span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={p.percent} aria-valuemin={0} aria-valuemax={100} aria-label={p.name}>
-            <div className="h-full rounded-full bg-accent" style={{ width: `${p.percent}%` }} />
+          <div className="h-2 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={p.percent} aria-valuemin={0} aria-valuemax={100} aria-label={p.name}>
+            <div className="h-full rounded-full bg-gradient-to-r from-accent to-secondary" style={{ width: `${p.percent}%` }} />
           </div>
         </li>
       ))}
@@ -68,12 +68,12 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
   const filtersActive = !!(params.assignee || params.project || params.status);
 
   return (
-    <div className="mx-auto w-full max-w-7xl flex-1 px-4 pb-16 sm:px-6">
+    <div className="page-pad mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6">
       <AppHeader title="Công việc" subtitle="Timeline task của cả team từ Drive." />
 
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
         <div className="space-y-5 lg:col-span-8">
-          <form method="get" action="/work" className="flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-surface p-4 shadow-panel">
+          <form method="get" action="/work" className="card reveal flex flex-wrap items-end gap-3 p-4">
             {[
               { name: "assignee", label: "Người phụ trách", value: params.assignee, options: assignees.map((a) => [a, a] as const) },
               { name: "project", label: "Dự án", value: params.project, options: projects.map((a) => [a, a] as const) },
@@ -140,16 +140,16 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
             {all.length === 0 ? (
               <Empty>
                 Chưa có task công việc.{" "}
-                <Link href="/settings" className="font-medium text-accent underline-offset-2 hover:underline">
+                <Link href="/settings" className="font-medium text-accent-strong underline-offset-2 hover:underline">
                   Thêm nguồn Drive hồ sơ Công việc
                 </Link>
               </Empty>
             ) : (
               <div className="space-y-3">
                 {timeline.days.map((d) => (
-                  <section key={d.day} className={`rounded-xl p-3.5 ${d.isToday ? "bg-accent-soft" : "bg-surface-2"}`}>
+                  <section key={d.day} className={`reveal rounded-2xl p-4 ${d.isToday ? "bg-accent-soft" : "bg-surface-2"}`}>
                     <h3 className="mb-2 flex items-center gap-2 text-sm">
-                      <span className={`font-semibold ${d.isToday ? "text-accent" : ""}`}>{d.isToday ? "Hôm nay" : formatDayKey(d.day)}</span>
+                      <span className={`font-semibold ${d.isToday ? "text-accent-deep" : ""}`}>{d.isToday ? "Hôm nay" : formatDayKey(d.day)}</span>
                       {d.isToday && <span className="text-ink-3">{formatDayKey(d.day)}</span>}
                       {d.tasks.length > 0 && <Pill>{d.tasks.length}</Pill>}
                     </h3>

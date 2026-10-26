@@ -23,7 +23,7 @@ export function RecentFilesList({ tabs }: { tabs: RecentFileTab[] }) {
               role="tab"
               aria-selected={on}
               onClick={() => setActive(t.key)}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${on ? "bg-accent-soft text-accent" : "bg-surface-2 text-ink-2 hover:text-ink"}`}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${on ? "bg-accent-soft text-accent-deep" : "bg-surface-2 text-ink-2 hover:text-ink"}`}
             >
               {t.label}
             </button>
