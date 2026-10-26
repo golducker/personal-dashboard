@@ -44,7 +44,9 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
 
-      - run: npx playwright install --with-deps --only-shell chromium
+      # no --with-deps: the runner image already ships Chrome's system libs, and the apt
+      # mirror can be slow enough to blow the job timeout
+      - run: npx playwright install --only-shell chromium
 
       - name: Scrape
         env:
