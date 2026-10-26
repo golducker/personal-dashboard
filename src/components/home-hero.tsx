@@ -1,5 +1,5 @@
 import { getCalendarWindow, getDeadlines } from "@/lib/home-data";
-import { mascotLines } from "@/lib/mascot-lines";
+import { summaryLine } from "@/lib/mascot-lines";
 import { isOverdue } from "@/lib/drive/view";
 import { dayKey, formatLongDate, groupByDay, timeLabel } from "@/lib/time";
 import { CountUp } from "./count-up";
@@ -48,7 +48,7 @@ export function HeroView({ stats }: { stats: Stats | null }) {
   const now = new Date();
   const hour = Number(timeLabel(now).slice(0, 2));
   const date = formatLongDate(now);
-  const lines = mascotLines({ overdue: stats?.overdue ?? null, today: stats?.dueToday ?? null, hour });
+  const line = summaryLine({ overdue: stats?.overdue ?? null, today: stats?.dueToday ?? null });
   const s = stats ?? { dueToday: null, overdue: null, events: null };
 
   return (
@@ -62,7 +62,7 @@ export function HeroView({ stats }: { stats: Stats | null }) {
         </div>
 
         <MascotSpeaker
-          lines={lines}
+          line={line}
           size="lg"
           pose={s.overdue ? "panic" : "calm"}
           bubbleClassName="bubble-hero col-span-2 row-start-2 justify-self-end lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:self-center lg:justify-self-end"

@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { BTN_PRIMARY, CARD, INPUT } from "@/components/card";
 import { Mascot } from "@/components/mascot";
-import { Bubble } from "@/components/mascot-speaker";
 import { sfx } from "@/lib/sfx";
 
 export default function LoginPage() {
@@ -43,11 +42,6 @@ export default function LoginPage() {
     <main className="flex min-h-[100dvh] flex-1 items-center justify-center px-4 pt-[calc(var(--safe-top)+2rem)] pb-[calc(var(--safe-bottom)+2rem)]">
       <div className="w-full max-w-sm space-y-5">
         <div className="flex flex-col items-center gap-3 text-center">
-          <Bubble
-            light="Quạc… mã truy cập là gì nhỉ? Tui quên rồi."
-            dark="Cửa đang khóa. Đoán sai thì tôi cười đấy."
-            className="bubble-down"
-          />
           <Mascot size="lg" pose="panic" className="max-sm:[--ms:140px]" />
           <p className="font-display text-xl font-bold tracking-tight">Dashboard</p>
         </div>

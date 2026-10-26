@@ -816,13 +816,6 @@ html[data-scrolled] .chrome-title {
   top: 50%;
   margin-top: -6px;
 }
-.bubble-down::after {
-  top: auto;
-  bottom: -7px;
-  right: 50%;
-  margin: 0 -6px 0 0;
-  transform: rotate(45deg);
-}
 /* hero bubble: tail points up at the mascot below the greeting on small screens, right at it on lg */
 .bubble-hero::after {
   top: -7px;
