@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth";
 
 // Next 16: "middleware" was renamed to "proxy".
-const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/auth/logout", "/manifest.webmanifest", "/favicon.ico"];
+const PUBLIC_PATHS = ["/login", "/privacy","/api/auth/login", "/api/auth/logout", "/manifest.webmanifest", "/favicon.ico"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

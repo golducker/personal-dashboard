@@ -63,6 +63,11 @@ export default function LoginPage() {
         >
           {loading ? "Đang kiểm tra..." : "Đăng nhập"}
         </button>
+        <p className="text-center text-xs text-neutral-500">
+          <a href="/privacy" className="underline">
+            Privacy Policy
+          </a>
+        </p>
       </form>
     </main>
   );
