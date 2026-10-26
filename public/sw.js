@@ -1,5 +1,5 @@
 // Plain-JS service worker (no bundler). Bump VERSION to invalidate old caches.
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL_CACHE = `shell-${VERSION}`;
 const STATIC_CACHE = `static-${VERSION}`;
 const OFFLINE_URL = "/offline";
