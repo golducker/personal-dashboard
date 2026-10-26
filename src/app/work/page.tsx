@@ -3,6 +3,7 @@ import { CaretLeft, CaretRight, ChartBar, ClockCountdown, ListChecks } from "@ph
 import { AppHeader } from "@/components/app-header";
 import { BTN, BTN_GHOST, Empty, INPUT, Panel, Pill } from "@/components/card";
 import { TaskLine } from "@/components/deadline-sections";
+import { GroupDoneButton } from "@/components/group-done-button";
 import { loadDeadlines } from "@/lib/drive/queries";
 import {
   applyFilters,
@@ -30,16 +31,20 @@ function href(p: Params, over: Partial<Params>): string {
   return s ? `/work?${s}` : "/work";
 }
 
-function ProgressList({ items }: { items: Progress[] }) {
+/** `openIds` (project list only): open task ids per row name, for the "Xong hết" button. */
+function ProgressList({ items, openIds }: { items: Progress[]; openIds?: Map<string, string[]> }) {
   if (items.length === 0) return <Empty>Chưa có dữ liệu.</Empty>;
   return (
     <ul className="space-y-3">
       {items.slice(0, 12).map((p) => (
         <li key={p.name}>
-          <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
+          <div className="mb-1 flex items-center justify-between gap-3 text-sm">
             <span className="min-w-0 truncate font-medium">{p.name}</span>
-            <span className="shrink-0 font-mono text-xs text-ink-2 tabular-nums">
-              {p.done}/{p.total} · {p.percent}%
+            <span className="flex shrink-0 items-center gap-1.5">
+              {openIds && <GroupDoneButton label={p.name} ids={openIds.get(p.name) ?? []} />}
+              <span className="font-mono text-xs text-ink-2 tabular-nums">
+                {p.done}/{p.total} · {p.percent}%
+              </span>
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={p.percent} aria-valuemin={0} aria-valuemax={100} aria-label={p.name}>
@@ -66,6 +71,13 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
   const timeline = buildTimeline(filtered, start, DAYS_PER_PAGE, today);
   const last = timeline.days[timeline.days.length - 1].day;
   const filtersActive = !!(params.assignee || params.project || params.status);
+  // same key as progressByProject, so each progress row finds its open tasks
+  const openByProject = new Map<string, string[]>();
+  for (const r of all) {
+    if (r.done) continue;
+    const k = r.groupLabel ?? "Không rõ dự án";
+    openByProject.set(k, [...(openByProject.get(k) ?? []), r.id]);
+  }
 
   return (
     <div className="page-pad mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6">
@@ -171,7 +183,7 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
 
         <div className="space-y-5 lg:col-span-4">
           <Panel title="Tiến độ theo dự án" icon={<ChartBar />}>
-            <ProgressList items={progressByProject(all)} />
+            <ProgressList items={progressByProject(all)} openIds={openByProject} />
           </Panel>
           <Panel title="Tiến độ theo người" icon={<ChartBar />}>
             <ProgressList items={progressByAssignee(all)} />

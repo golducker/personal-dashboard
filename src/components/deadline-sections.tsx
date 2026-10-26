@@ -9,6 +9,7 @@ import { relativeTimeVi } from "@/lib/relative-time";
 import { dayKey, timeLabel } from "@/lib/time";
 import { Empty, Panel, Pill } from "./card";
 import { DeadlineProgress } from "./deadline-progress";
+import { GroupDoneButton } from "./group-done-button";
 import { RecentFilesList, type RecentFileTab } from "./recent-files-list";
 
 const MAX_PER_GROUP = 8;
@@ -99,7 +100,10 @@ export async function DeadlinePanel({ className, showDone }: { className?: strin
                 <span className="font-semibold">Công việc</span>
                 {overdueWork.length > 0 && <Pill tone="danger">{overdueWork.length} quá hạn</Pill>}
                 {todayWork.length > 0 && <Pill tone="warn">{todayWork.length} hôm nay</Pill>}
-                <Link href="/work" className="ml-auto text-xs font-medium text-accent-strong hover:underline">
+                <span className="ml-auto">
+                  <GroupDoneButton label="Công việc" ids={work.map((r) => r.id)} />
+                </span>
+                <Link href="/work" className="text-xs font-medium text-accent-strong hover:underline">
                   Xem tất cả
                 </Link>
               </p>
@@ -115,11 +119,16 @@ export async function DeadlinePanel({ className, showDone }: { className?: strin
 
           {groups.map((g) => (
             <section key={g.key}>
-              <h3 className="mb-2 flex flex-wrap items-baseline gap-x-2 text-sm font-semibold">
-                {g.label}
-                {g.date && <span className="text-xs font-normal text-ink-3">diễn ra {dueLabel(g.date).slice(0, 5)}</span>}
-                <Pill>{PROFILE_LABELS.mlsv}</Pill>
-              </h3>
+              <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <h3 className="flex flex-wrap items-baseline gap-x-2 text-sm font-semibold">
+                  {g.label}
+                  {g.date && <span className="text-xs font-normal text-ink-3">diễn ra {dueLabel(g.date).slice(0, 5)}</span>}
+                  <Pill>{PROFILE_LABELS.mlsv}</Pill>
+                </h3>
+                <span className="ml-auto">
+                  <GroupDoneButton label={g.label} ids={g.tasks.filter((r) => !r.done).map((r) => r.id)} />
+                </span>
+              </div>
               <ul className="space-y-2.5">
                 {g.tasks.slice(0, MAX_PER_GROUP).map((r) => (
                   <TaskLine key={r.id} r={r} today={today} />

@@ -18,6 +18,15 @@ export type ProgressInput = ProgressState | null;
 
 export const updateProgressSchema = z.object({ progress: progressSchema.nullable() });
 
+/** Many deadlines at once (mark a whole event done, or undo that). Each item carries its own value so undo can restore mixed states. */
+export const MAX_BULK = 200;
+export const bulkProgressSchema = z.object({
+  items: z
+    .array(z.object({ id: z.uuid(), progress: progressSchema.nullable() }))
+    .min(1)
+    .max(MAX_BULK),
+});
+
 /** What the dashboard treats the task as: the user's choice wins over the sheet. */
 export function effectiveProgress(progress: ProgressState | null, sheetDone: boolean): ProgressState {
   return progress ?? (sheetDone ? "done" : "todo");

@@ -1,7 +1,7 @@
 // Small DOM-only visual effects (Web Animations API, transform/opacity only). Client only.
 
-const DARK_COLORS = ["#9b6bff", "#e2457a", "#c4a8ff", "#ff7fb0"];
-const LIGHT_COLORS = ["#ffc72c", "#ffb000", "#ffe48a", "#f59e0b"];
+const DARK_COLORS = ["#a08ae0", "#b6a5ea", "#cbbff2", "#ecebf2"];
+const LIGHT_COLORS = ["#f3bb2b", "#e0a414", "#fbe7a8", "#8d6106"];
 
 function isDark(): boolean {
   const t = document.documentElement.dataset.theme;
