@@ -40,6 +40,12 @@ export function mlsvTabs(titles: string[]): string[] {
   return overview ? [...assign, overview] : assign;
 }
 
+/** Event sheets name the due column either "Mốc thời gian" or "Deadline". */
+function dueCol(headerFolded: string[]): number {
+  const moc = findCol(headerFolded, "moc thoi gian");
+  return moc >= 0 ? moc : findCol(headerFolded, "deadline");
+}
+
 function isBcm(phanCong: string): boolean {
   const f = fold(phanCong);
   return f.includes("ban chuyen mon") || /\bbcm\b/.test(f);
@@ -61,7 +67,7 @@ export function parseMlsvEvent(input: { fileId: string; fileName: string; tabs: 
     if (!fold(tab).includes("phan cong")) continue;
     const header = findHeaderRow(
       rows,
-      (f) => findCol(f, "phan cong") >= 0 && findCol(f, "moc thoi gian") >= 0,
+      (f) => findCol(f, "phan cong") >= 0 && dueCol(f) >= 0,
       fold,
     );
     if (!header) continue;
@@ -71,7 +77,7 @@ export function parseMlsvEvent(input: { fileId: string; fileName: string; tabs: 
       title: titleExact >= 0 ? titleExact : findCol(header.folded, "hang muc"),
       assign: findCol(header.folded, "phan cong"),
       owner: findCol(header.folded, "nguoi phu trach"),
-      due: findCol(header.folded, "moc thoi gian"),
+      due: dueCol(header.folded),
       status: findCol(header.folded, "trang thai"),
       link: findCol(header.folded, "tai lieu"),
     };

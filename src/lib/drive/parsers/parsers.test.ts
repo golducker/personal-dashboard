@@ -33,6 +33,18 @@ describe("parseMlsvEvent", () => {
     ],
   };
 
+  it("accepts a due column named Deadline", () => {
+    const header = HEADER.map((h) => (h === "Mốc thời gian" ? "Deadline" : h));
+    const rows = parseMlsvEvent({
+      fileId: "F2",
+      fileName: "X | Chương trình Gamma Talk 21/10/2026",
+      tabs: { "2. Phân công Nhân sự": [[], ["", ...header], ["", "1", "Soạn câu hỏi", "", "Ban Chuyên môn", "", "18/10/2026", "", ""]] },
+      now: NOW,
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].dueAt?.toISOString()).toBe("2026-10-18T16:59:00.000Z");
+  });
+
   it("keeps only BCM rows and maps columns by header", () => {
     const rows = parseMlsvEvent({ fileId: "F1", fileName: "X | Chương trình Alpha Night 20/11/2026", tabs, now: NOW });
     expect(rows.map((r) => r.title)).toEqual(["Chốt nội dung", "Viết kịch bản", "Gửi thư mời"]);

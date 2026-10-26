@@ -48,7 +48,9 @@ function checkTime(ctx: Ctx) {
 }
 
 const joinPath = (parent: string, name: string) => (parent ? `${parent}/${name}` : name);
-const marker = (modified: Date | null) => modified?.toISOString() ?? "none";
+/** Bump when a parser changes so every sheet is parsed again on the next run. */
+const PARSE_VERSION = 2;
+const marker = (modified: Date | null) => `v${PARSE_VERSION}:${modified?.toISOString() ?? "none"}`;
 
 function chunk<T>(list: T[], size: number): T[][] {
   const out: T[][] = [];
