@@ -1,6 +1,8 @@
 "use client";
 
+import { SignOut } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
+import { BTN_GHOST } from "./card";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -11,9 +13,11 @@ export function LogoutButton() {
         router.replace("/login");
         router.refresh();
       }}
-      className="rounded-lg border border-black/15 px-3 py-1.5 text-sm transition hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10"
+      className={`${BTN_GHOST} ml-auto sm:ml-0`}
+      title="Đăng xuất"
     >
-      Đăng xuất
+      <SignOut size={18} />
+      <span className="sr-only sm:not-sr-only">Đăng xuất</span>
     </button>
   );
 }

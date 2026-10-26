@@ -1,11 +1,12 @@
+import { CheckSquareOffset } from "@phosphor-icons/react/dist/ssr";
 import { dayKey } from "@/lib/time";
 import { getTodayAndOverdue, getUpcoming, listProjects, splitByDue } from "@/lib/todoist";
 import { load, toTaskView } from "@/lib/today";
-import { CARD, SectionTitle, SourceProblem } from "./card";
+import { Panel, SourceProblem } from "./card";
 import { QuickAddTask } from "./quick-add-task";
 import { TaskList } from "./task-list";
 
-export async function TasksSection() {
+export async function TasksSection({ className }: { className?: string }) {
   const today = dayKey(new Date());
   const result = await load(async () => {
     const [now, upcoming, projects] = await Promise.all([
@@ -18,10 +19,9 @@ export async function TasksSection() {
 
   if (!result.ok) {
     return (
-      <section className="space-y-3">
-        <SectionTitle>Việc cần làm</SectionTitle>
+      <Panel title="Việc cần làm" icon={<CheckSquareOffset />} className={className}>
         <SourceProblem failure={result} name="Todoist" />
-      </section>
+      </Panel>
     );
   }
 
@@ -30,14 +30,14 @@ export async function TasksSection() {
   const split = splitByDue(now);
   const later = splitByDue(upcoming).later;
   const view = (list: typeof now) => list.map((t) => toTaskView(t, names, today));
+  const count = split.overdue.length + split.today.length;
 
   return (
-    <section className="space-y-3">
-      <SectionTitle>Việc cần làm</SectionTitle>
-      <div className={`${CARD} space-y-3 p-4`}>
+    <Panel title="Việc cần làm" icon={<CheckSquareOffset />} meta={count ? `${count} việc` : undefined} className={className}>
+      <div className="space-y-4">
         <QuickAddTask />
         <TaskList overdue={view(split.overdue)} today={view(split.today)} later={view(later)} />
       </div>
-    </section>
+    </Panel>
   );
 }

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { call } from "./api-client";
-import { BTN } from "./card";
+import { BTN, BTN_DANGER, BTN_GHOST } from "./card";
 
 export function DisconnectGoogleButton() {
   const router = useRouter();
@@ -26,12 +26,12 @@ export function DisconnectGoogleButton() {
     );
   }
   return (
-    <span className="flex items-center gap-2 text-sm">
-      <span className="text-neutral-500">Ngắt kết nối Google?</span>
-      <button disabled={busy} onClick={run} className="rounded-lg bg-red-600 px-3 py-1.5 font-medium text-white disabled:opacity-50">
+    <span className="flex flex-wrap items-center gap-2 text-sm">
+      <span className="text-ink-2">Ngắt kết nối Google?</span>
+      <button disabled={busy} onClick={run} className={BTN_DANGER}>
         Ngắt
       </button>
-      <button onClick={() => setConfirm(false)} className={BTN}>
+      <button onClick={() => setConfirm(false)} className={BTN_GHOST}>
         Hủy
       </button>
     </span>

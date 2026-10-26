@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { call } from "./api-client";
@@ -26,13 +27,15 @@ export function QuickAddTask() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-2">
+    <form onSubmit={onSubmit} className="space-y-1.5">
       <div className="flex flex-col gap-2 sm:flex-row">
-        <input value={content} onChange={(e) => setContent(e.target.value)} placeholder="Thêm việc mới…" className={INPUT} aria-label="Nội dung việc" />
-        <input value={due} onChange={(e) => setDue(e.target.value)} placeholder="Hạn: mai 9h (mặc định hôm nay)" className={`${INPUT} sm:max-w-56`} aria-label="Hạn" />
-        <button disabled={busy || !content.trim()} className={`${BTN_PRIMARY} shrink-0`}>Thêm</button>
+        <input value={content} onChange={(e) => setContent(e.target.value)} placeholder="Thêm việc mới" className={INPUT} aria-label="Nội dung việc" />
+        <input value={due} onChange={(e) => setDue(e.target.value)} placeholder="Hạn, vd: mai 9h" className={`${INPUT} sm:max-w-40`} aria-label="Hạn (mặc định hôm nay)" />
+        <button disabled={busy || !content.trim()} className={`${BTN_PRIMARY} shrink-0`}>
+          <Plus size={16} weight="bold" /> Thêm
+        </button>
       </div>
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error ? <p className="text-sm text-danger">{error}</p> : <p className="text-xs text-ink-3">Để trống hạn thì tính là hôm nay.</p>}
     </form>
   );
 }

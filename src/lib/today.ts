@@ -50,7 +50,7 @@ export function toEventView(e: CalEvent): EventView {
   const endTime = timeLabel(e.end);
   return {
     id: e.id, calendarId: e.calendarId, calendarName: e.calendarName, color: e.color, title: e.title,
-    location: e.location, htmlLink: e.htmlLink, allDay: false, when: `${startTime}–${endTime}`,
+    location: e.location, htmlLink: e.htmlLink, allDay: false, when: `${startTime} - ${endTime}`,
     date: dayKey(e.start), startTime, endTime,
   };
 }

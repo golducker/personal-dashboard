@@ -1,5 +1,6 @@
+import { GoogleLogo, ListChecks, Plugs } from "@phosphor-icons/react/dist/ssr";
 import { AppHeader } from "@/components/app-header";
-import { BTN_PRIMARY, CARD, SectionTitle } from "@/components/card";
+import { BTN_PRIMARY, Panel, Pill } from "@/components/card";
 import { DisconnectGoogleButton } from "@/components/disconnect-google-button";
 import { getConnection } from "@/lib/google";
 import { isConfigured } from "@/lib/sources";
@@ -31,37 +32,23 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const scopes = (conn?.scopes ?? []).map((s) => SCOPE_LABELS[s]).filter(Boolean);
 
   return (
-    <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:py-10">
-      <AppHeader title="Cài đặt" subtitle="Kết nối và nguồn dữ liệu" />
+    <div className="mx-auto w-full max-w-3xl flex-1 px-4 pb-16 sm:px-6">
+      <AppHeader title="Cài đặt" subtitle="Kết nối và nguồn dữ liệu." />
       {flash && (
-        <p
-          role="status"
-          className={`mb-4 rounded-xl p-3 text-sm ${
-            flash.ok
-              ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
-              : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300"
-          }`}
-        >
+        <p role="status" className={`mb-5 rounded-xl px-4 py-3 text-sm ${flash.ok ? "bg-accent-soft text-accent" : "bg-danger-soft text-danger"}`}>
           {flash.text}
         </p>
       )}
 
-      <div className="space-y-6">
-        <section className="space-y-3">
-          <SectionTitle>Tài khoản</SectionTitle>
-          <article className={`${CARD} space-y-3 p-4`}>
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-medium">Google (Calendar + Drive)</h3>
-              <span className="rounded-full bg-neutral-200 px-2.5 py-0.5 text-xs font-medium dark:bg-neutral-800">
-                {conn ? "Đã kết nối" : "Chưa kết nối"}
-              </span>
-            </div>
-            {!googleReady && <p className="text-sm text-neutral-500">Thiếu GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET.</p>}
+      <div className="space-y-5">
+        <Panel title="Google" icon={<GoogleLogo />} action={<Pill tone={conn ? "accent" : "neutral"}>{conn ? "Đã kết nối" : "Chưa kết nối"}</Pill>}>
+          <div className="space-y-4">
+            {!googleReady && <p className="text-sm text-ink-2">Thiếu GOOGLE_CLIENT_ID hoặc GOOGLE_CLIENT_SECRET.</p>}
             {conn && (
-              <p className="text-sm text-neutral-500">
-                {conn.email}
-                {scopes.length ? ` · ${scopes.join(", ")}` : ""}
-              </p>
+              <div className="space-y-1 text-sm">
+                <p className="font-medium">{conn.email}</p>
+                {scopes.length > 0 && <p className="text-ink-2">Quyền: {scopes.join(", ")}</p>}
+              </div>
             )}
             <div className="flex flex-wrap items-center gap-2">
               {googleReady && (
@@ -71,33 +58,21 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               )}
               {conn && <DisconnectGoogleButton />}
             </div>
-            <p className="text-xs text-neutral-500">
-              Ứng dụng đang ở chế độ Testing: phiên Google hết hạn sau 7 ngày, khi đó hãy bấm “Kết nối lại”.
-            </p>
-          </article>
+          </div>
+        </Panel>
 
-          <article className={`${CARD} space-y-1 p-4`}>
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-medium">Todoist</h3>
-              <span className="rounded-full bg-neutral-200 px-2.5 py-0.5 text-xs font-medium dark:bg-neutral-800">
-                {todoistReady ? "Đã cấu hình" : "Chưa cấu hình"}
-              </span>
-            </div>
-            <p className="text-sm text-neutral-500">
-              {todoistReady ? "Dùng TODOIST_API_TOKEN từ biến môi trường." : "Thêm TODOIST_API_TOKEN vào biến môi trường."}
-            </p>
-          </article>
-        </section>
+        <Panel title="Todoist" icon={<ListChecks />} action={<Pill tone={todoistReady ? "accent" : "neutral"}>{todoistReady ? "Đã cấu hình" : "Chưa cấu hình"}</Pill>}>
+          <p className="text-sm text-ink-2">
+            {todoistReady ? "Dùng TODOIST_API_TOKEN từ biến môi trường." : "Thêm TODOIST_API_TOKEN vào biến môi trường."}
+          </p>
+        </Panel>
 
-        <section className="space-y-3">
-          <SectionTitle>Sắp có</SectionTitle>
-          {["Nguồn Google Drive", "Telegram"].map((name) => (
-            <article key={name} className={`${CARD} flex items-center justify-between gap-2 p-4`}>
-              <h3 className="font-medium">{name}</h3>
-              <span className="text-sm text-neutral-500">Sắp có</span>
-            </article>
-          ))}
-        </section>
+        <Panel title="Sắp có" icon={<Plugs />}>
+          <ul className="space-y-2 text-sm text-ink-2">
+            <li>Nguồn Google Drive: dự án và deadline từ thư mục được chọn.</li>
+            <li>Thông báo đẩy trên điện thoại.</li>
+          </ul>
+        </Panel>
       </div>
     </div>
   );

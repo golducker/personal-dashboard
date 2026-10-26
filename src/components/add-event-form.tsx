@@ -1,10 +1,11 @@
 "use client";
 
+import { Plus } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { localDateTime } from "@/lib/time";
 import { call } from "./api-client";
-import { BTN, BTN_PRIMARY, INPUT } from "./card";
+import { BTN, BTN_GHOST, BTN_PRIMARY, INPUT } from "./card";
 
 export type CalendarOption = { id: string; name: string; primary: boolean };
 
@@ -40,40 +41,55 @@ export function AddEventForm({ calendars, today }: { calendars: CalendarOption[]
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className={BTN}>
-        + Sự kiện
+      <button onClick={() => setOpen(true)} className={`${BTN_GHOST} -ml-2`}>
+        <Plus size={16} weight="bold" /> Thêm sự kiện
       </button>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="w-full space-y-2 rounded-xl border border-black/10 p-3 dark:border-white/10">
-      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Tiêu đề" className={INPUT} required autoFocus />
-      <div className="flex flex-wrap items-center gap-2">
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={`${INPUT} !w-auto`} required />
+    <form onSubmit={onSubmit} className="space-y-3 rounded-xl bg-surface-2 p-3">
+      <label className="block space-y-1 text-xs text-ink-2">
+        Tiêu đề
+        <input value={title} onChange={(e) => setTitle(e.target.value)} className={INPUT} required autoFocus />
+      </label>
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="space-y-1 text-xs text-ink-2">
+          <span className="block">Ngày</span>
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={`${INPUT} !w-auto`} required />
+        </label>
         {!allDay && (
           <>
-            <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className={`${INPUT} !w-auto`} required />
-            <span className="text-neutral-500">–</span>
-            <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className={`${INPUT} !w-auto`} required />
+            <label className="space-y-1 text-xs text-ink-2">
+              <span className="block">Bắt đầu</span>
+              <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className={`${INPUT} !w-auto`} required />
+            </label>
+            <label className="space-y-1 text-xs text-ink-2">
+              <span className="block">Kết thúc</span>
+              <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className={`${INPUT} !w-auto`} required />
+            </label>
           </>
         )}
-        <label className="flex items-center gap-1.5 text-sm">
-          <input type="checkbox" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} /> Cả ngày
+        <label className="flex h-[38px] items-center gap-2 text-sm">
+          <input type="checkbox" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} className="size-4 accent-[var(--accent)]" />
+          Cả ngày
         </label>
       </div>
       {calendars.length > 1 && (
-        <select value={calendarId} onChange={(e) => setCalendarId(e.target.value)} className={INPUT} aria-label="Lịch">
-          {calendars.map((c) => (
-            <option key={c.id} value={c.id} className="text-black">
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <label className="block space-y-1 text-xs text-ink-2">
+          Lịch
+          <select value={calendarId} onChange={(e) => setCalendarId(e.target.value)} className={INPUT}>
+            {calendars.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
       )}
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       <div className="flex gap-2">
-        <button disabled={busy} className={BTN_PRIMARY}>Thêm</button>
+        <button disabled={busy} className={BTN_PRIMARY}>{busy ? "Đang thêm..." : "Thêm"}</button>
         <button type="button" onClick={() => setOpen(false)} className={BTN}>Hủy</button>
       </div>
     </form>

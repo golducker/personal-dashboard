@@ -1,33 +1,39 @@
 "use client";
 
+import { Check } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { TaskView } from "@/lib/today";
 import { call } from "./api-client";
-import { BTN } from "./card";
+import { Empty } from "./card";
 
+// Todoist priority (4 = urgent) mapped onto the semantic palette.
 const RING = {
-  4: "border-red-500",
-  3: "border-orange-500",
-  2: "border-blue-500",
-  1: "border-neutral-400",
+  4: "border-danger",
+  3: "border-warn",
+  2: "border-accent",
+  1: "border-line-strong",
 } as const;
 
 function Row({ task, overdue, onClose }: { task: TaskView; overdue?: boolean; onClose: (t: TaskView) => void }) {
   return (
-    <li className="flex items-start gap-3 py-2">
+    <li className="group flex items-start gap-3 rounded-xl px-2 py-2.5 transition hover:bg-surface-2">
       <button
         onClick={() => onClose(task)}
         aria-label={`Hoàn thành: ${task.content}`}
-        className={`mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 transition hover:bg-black/10 dark:hover:bg-white/15 ${RING[task.priority]}`}
-      />
+        className={`mt-px grid size-5 shrink-0 place-items-center rounded-full border-2 text-transparent transition hover:text-ink-2 active:scale-90 ${RING[task.priority]}`}
+      >
+        <Check size={11} weight="bold" />
+      </button>
       <div className="min-w-0 flex-1">
-        <p className="break-words">{task.content}</p>
-        <p className="text-xs text-neutral-500">
-          {task.dueLabel && <span className={overdue ? "text-red-600 dark:text-red-400" : ""}>{task.dueLabel}</span>}
-          {task.dueLabel && task.projectName ? " · " : ""}
-          {task.projectName}
-        </p>
+        <p className="text-sm leading-5 break-words">{task.content}</p>
+        {(task.dueLabel || task.projectName) && (
+          <p className="text-xs text-ink-2">
+            {task.dueLabel && <span className={overdue ? "font-medium text-danger" : ""}>{task.dueLabel}</span>}
+            {task.dueLabel && task.projectName ? ", " : ""}
+            {task.projectName}
+          </p>
+        )}
       </div>
     </li>
   );
@@ -83,11 +89,11 @@ export function TaskList({ overdue, today, later }: { overdue: TaskView[]; today
 
   return (
     <div className="space-y-3">
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       {o.length + t.length === 0 ? (
-        <p className="text-sm text-neutral-500">Không còn việc nào cho hôm nay.</p>
+        <Empty>Hết việc cho hôm nay.</Empty>
       ) : (
-        <ul className="divide-y divide-black/5 dark:divide-white/10">
+        <ul className="-mx-2 space-y-0.5">
           {o.map((x) => (
             <Row key={x.id} task={x} overdue onClose={onClose} />
           ))}
@@ -97,11 +103,11 @@ export function TaskList({ overdue, today, later }: { overdue: TaskView[]; today
         </ul>
       )}
       {l.length > 0 && (
-        <details className="border-t border-black/5 pt-3 dark:border-white/10">
-          <summary className="cursor-pointer text-sm font-medium">
-            Sắp tới <span className="font-normal text-neutral-500">({l.length})</span>
+        <details className="border-t border-line pt-3">
+          <summary className="cursor-pointer text-sm font-medium text-ink-2 hover:text-ink">
+            Sắp tới <span className="font-normal text-ink-3">({l.length})</span>
           </summary>
-          <ul className="mt-1 divide-y divide-black/5 dark:divide-white/10">
+          <ul className="-mx-2 mt-2 space-y-0.5">
             {l.map((x) => (
               <Row key={x.id} task={x} onClose={onClose} />
             ))}
@@ -111,10 +117,10 @@ export function TaskList({ overdue, today, later }: { overdue: TaskView[]; today
       {toast && (
         <div
           role="status"
-          className="fixed inset-x-4 bottom-4 z-10 mx-auto flex max-w-sm items-center justify-between gap-3 rounded-xl bg-neutral-900 px-4 py-3 text-sm text-white shadow-lg dark:bg-neutral-100 dark:text-neutral-900"
+          className="fixed inset-x-4 bottom-4 z-20 mx-auto flex max-w-sm items-center justify-between gap-3 rounded-xl bg-ink px-4 py-3 text-sm text-bg shadow-panel"
         >
-          <span className="truncate">Đã hoàn thành: {toast.content}</span>
-          <button onClick={onUndo} className={`${BTN} shrink-0 !border-white/30 !text-white hover:!bg-white/10 dark:!border-black/30 dark:!text-neutral-900 dark:hover:!bg-black/10`}>
+          <span className="truncate">Đã xong: {toast.content}</span>
+          <button onClick={onUndo} className="shrink-0 rounded-lg px-2.5 py-1 font-medium underline-offset-2 hover:underline">
             Hoàn tác
           </button>
         </div>

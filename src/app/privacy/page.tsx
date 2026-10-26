@@ -7,9 +7,9 @@ const CONTACT = "lethinh512.stu@gmail.com";
 // Public page: Google requires a privacy policy URL before the OAuth app can be published.
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-12 text-sm leading-6 text-neutral-700 dark:text-neutral-300">
-      <h1 className="mb-1 text-2xl font-semibold text-neutral-900 dark:text-neutral-100">Privacy Policy</h1>
-      <p className="mb-8 text-neutral-500">Personal Dashboard · Last updated 26 October 2026</p>
+    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-12 text-sm leading-6 text-ink-2">
+      <h1 className="mb-1 text-2xl font-semibold text-ink">Privacy Policy</h1>
+      <p className="mb-8 text-ink-3">Personal Dashboard · Last updated 26 October 2026</p>
 
       <Section title="What this app is">
         Personal Dashboard is a private, single-user app. It is used only by its owner to see their own calendar,
@@ -76,7 +76,7 @@ export default function PrivacyPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-6">
-      <h2 className="mb-2 text-base font-semibold text-neutral-900 dark:text-neutral-100">{title}</h2>
+      <h2 className="mb-2 text-base font-semibold text-ink">{title}</h2>
       <div>{children}</div>
     </section>
   );

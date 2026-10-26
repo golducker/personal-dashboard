@@ -1,25 +1,81 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens. One cool-neutral palette, one accent (emerald), semantic danger/warn only for state.
+ * Shapes: panels 16px (rounded-2xl), controls and inputs 8px (rounded-lg), pills full.
+ */
 :root {
-  --background: #f6f7f9;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bg: #f3f4f6;
+  --surface: #fdfdfd;
+  --surface-2: #f0f1f4;
+  --line: rgb(17 24 39 / 0.09);
+  --line-strong: rgb(17 24 39 / 0.16);
+  --ink: #15171c;
+  --ink-2: #555b66;
+  --ink-3: #737985;
+  --accent: #0b7a5a;
+  --accent-ink: #fdfdfd;
+  --accent-soft: #e3f3ec;
+  --danger: #b4321f;
+  --danger-soft: #fbe9e6;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0dc;
+  --shadow: 0 1px 2px rgb(17 24 39 / 0.04), 0 4px 16px -8px rgb(17 24 39 / 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #0d0e11;
+    --surface: #15171b;
+    --surface-2: #1c1f24;
+    --line: rgb(255 255 255 / 0.08);
+    --line-strong: rgb(255 255 255 / 0.16);
+    --ink: #ececef;
+    --ink-2: #a3a8b1;
+    --ink-3: #848993;
+    --accent: #3fcf9b;
+    --accent-ink: #08130f;
+    --accent-soft: rgb(63 207 155 / 0.13);
+    --danger: #f2826f;
+    --danger-soft: rgb(242 130 111 / 0.12);
+    --warn: #f0b45a;
+    --warn-soft: rgb(240 180 90 / 0.12);
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --shadow-panel: var(--shadow);
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-num), ui-monospace, monospace;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--ink);
   font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
