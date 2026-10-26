@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { syncRuns } from "@/db/schema";
 import { checkBearer } from "@/lib/auth";
+import { MAX_BODY_BYTES, ftugateBodySchema, handleFtugate } from "@/lib/ftugate/sync";
 import { isSyncSource } from "@/lib/sources";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,29 @@ export async function POST(
   const { source } = await ctx.params;
   if (!isSyncSource(source)) {
     return NextResponse.json({ error: `Unknown source: ${source}` }, { status: 404 });
+  }
+
+  if (source === "ftugate") {
+    const declared = Number(request.headers.get("content-length") ?? 0);
+    if (declared > MAX_BODY_BYTES) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
+    const text = await request.text();
+    if (text.length > MAX_BODY_BYTES) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
+    let json: unknown;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    }
+    const parsed = ftugateBodySchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+    }
+    const { status, result } = await handleFtugate(parsed.data);
+    return NextResponse.json(result, { status });
   }
 
   let count = 0;

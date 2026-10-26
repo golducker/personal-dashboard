@@ -1,0 +1,56 @@
+# Scrapes FTUgate with Playwright and pushes the JSON to the dashboard (/api/sync/ftugate).
+# The repo is public, so these logs are public: the scraper only prints kinds, counts and
+# error codes. Never add steps that print payloads or upload traces/screenshots/artifacts.
+name: FTUgate sync
+
+on:
+  schedule:
+    # cron is UTC; Vietnam is UTC+7
+    - cron: "*/30 0-11 * * 1-6" # grades every 30 min, 7:00–18:30 VN, Mon–Sat
+    - cron: "30 22 * * *" # everything once a day, 5:30 VN
+  workflow_dispatch:
+    inputs:
+      kinds:
+        description: "Comma-separated: schedule,exams,grades,notices"
+        default: "schedule,exams,grades,notices"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ftugate
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Playwright version
+        id: pw
+        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      - run: npx playwright install --with-deps --only-shell chromium
+
+      - name: Scrape
+        env:
+          FTU_USERNAME: ${{ secrets.FTU_USERNAME }}
+          FTU_PASSWORD: ${{ secrets.FTU_PASSWORD }}
+          SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+          KINDS: ${{ github.event_name == 'workflow_dispatch' && inputs.kinds || (github.event.schedule == '30 22 * * *' && 'schedule,exams,notices,grades' || 'grades') }}
+        run: npx tsx scripts/ftugate/scrape.ts "--kinds=$KINDS"

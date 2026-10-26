@@ -14,7 +14,7 @@ export const SOURCE_ENV: Record<SyncSource, string[]> = {
   google_calendar: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
   drive: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
   todoist: ["TODOIST_API_TOKEN"],
-  ftugate: ["FTU_USERNAME", "FTU_PASSWORD"],
+  ftugate: [], // scraper runs in GitHub Actions and pushes here; no server-side env
   telegram: ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"],
   webpush: ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY"],
 };

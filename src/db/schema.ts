@@ -8,6 +8,7 @@ import {
   real,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -62,23 +63,35 @@ export const oauthTokens = pgTable(
   (t) => [primaryKey({ columns: [t.provider, t.accountEmail] })],
 );
 
-export const ftuSnapshots = pgTable("ftu_snapshots", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  kind: text("kind", { enum: ["schedule", "exams", "grades", "notices"] }).notNull(),
-  contentHash: text("content_hash").notNull(),
-  payload: jsonb("payload").notNull(),
-  fetchedAt: tstz("fetched_at").notNull().defaultNow(),
-});
+export const FTU_KINDS = ["schedule", "exams", "grades", "notices"] as const;
+export type FtuKind = (typeof FTU_KINDS)[number];
 
-export const gradeEvents = pgTable("grade_events", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  courseCode: text("course_code").notNull(),
-  courseName: text("course_name").notNull(),
-  semester: text("semester").notNull(),
-  score: jsonb("score").notNull(),
-  detectedAt: tstz("detected_at").notNull().defaultNow(),
-  notifiedAt: tstz("notified_at"),
-});
+export const ftuSnapshots = pgTable(
+  "ftu_snapshots",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    kind: text("kind", { enum: FTU_KINDS }).notNull(),
+    contentHash: text("content_hash").notNull(),
+    payload: jsonb("payload").notNull(),
+    fetchedAt: tstz("fetched_at").notNull().defaultNow(),
+  },
+  (t) => [index("ftu_snapshots_kind_fetched_idx").on(t.kind, t.fetchedAt)],
+);
+
+export const gradeEvents = pgTable(
+  "grade_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    courseCode: text("course_code").notNull(),
+    courseName: text("course_name").notNull(),
+    semester: text("semester").notNull(),
+    score: jsonb("score").notNull(),
+    scoreHash: text("score_hash").notNull(),
+    detectedAt: tstz("detected_at").notNull().defaultNow(),
+    notifiedAt: tstz("notified_at"),
+  },
+  (t) => [uniqueIndex("grade_events_course_sem_hash_idx").on(t.courseCode, t.semester, t.scoreHash)],
+);
 
 export const sources = pgTable("sources", {
   id: uuid("id").primaryKey().defaultRandom(),
