@@ -7,6 +7,7 @@ import { groupByEvent, isOverdue, type DeadlineRow } from "@/lib/drive/view";
 import { relativeTimeVi } from "@/lib/relative-time";
 import { dayKey, timeLabel } from "@/lib/time";
 import { Empty, Panel, Pill } from "./card";
+import { RecentFilesList, type RecentFileTab } from "./recent-files-list";
 
 const MAX_PER_GROUP = 8;
 const sheetUrl = (fileId: string) => fileUrl(fileId, "application/vnd.google-apps.spreadsheet");
@@ -146,53 +147,29 @@ const PROFILE_FILTERS = [
   { key: "brain", label: PROFILE_LABELS.brain },
 ] as const;
 
-export function isProfile(v: string | undefined): v is "work" | "mlsv" | "study" | "brain" {
-  return v === "work" || v === "mlsv" || v === "study" || v === "brain";
-}
-
-export async function RecentFilesPanel({ className, profile }: { className?: string; profile?: string }) {
-  const active = isProfile(profile) ? profile : undefined;
-  const rows = await loadRecentFiles(active, 10);
+export async function RecentFilesPanel({ className }: { className?: string }) {
+  // Load every tab at once so switching profile is instant and never reloads the page.
+  const tabs: RecentFileTab[] = await Promise.all(
+    PROFILE_FILTERS.map(async (f) => {
+      const rows = await loadRecentFiles(f.key || undefined, 10);
+      return {
+        key: f.key,
+        label: f.label,
+        files: rows.map((r) => ({
+          id: r.id,
+          name: r.name,
+          path: r.path,
+          url: fileUrl(r.id, r.mimeType),
+          profileLabel: PROFILE_LABELS[r.profile],
+          ago: r.modifiedTime ? relativeTimeVi(r.modifiedTime) : null,
+        })),
+      };
+    }),
+  );
 
   return (
     <Panel title="Drive gần đây" icon={<FolderOpen />} className={className}>
-      <div className="space-y-3">
-        <nav className="flex flex-wrap gap-1.5" aria-label="Lọc theo hồ sơ">
-          {PROFILE_FILTERS.map((f) => {
-            const on = (active ?? "") === f.key;
-            return (
-              <Link
-                key={f.key}
-                href={f.key ? `/?drive=${f.key}` : "/"}
-                aria-current={on ? "true" : undefined}
-                className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${on ? "bg-accent-soft text-accent" : "bg-surface-2 text-ink-2 hover:text-ink"}`}
-              >
-                {f.label}
-              </Link>
-            );
-          })}
-        </nav>
-        {rows.length === 0 ? (
-          <Empty>Chưa có file nào.</Empty>
-        ) : (
-          <ul className="space-y-2.5">
-            {rows.map((f) => (
-              <li key={f.id} className="flex items-start gap-3">
-                <span className="min-w-0 flex-1">
-                  <a href={fileUrl(f.id, f.mimeType)} target="_blank" rel="noreferrer" className="block text-sm leading-5 font-medium break-words hover:underline">
-                    {f.name}
-                  </a>
-                  <span className="block truncate text-xs text-ink-3">{f.path}</span>
-                </span>
-                <span className="flex shrink-0 flex-col items-end gap-1">
-                  <Pill>{PROFILE_LABELS[f.profile]}</Pill>
-                  {f.modifiedTime && <span className="text-xs text-ink-3">{relativeTimeVi(f.modifiedTime)}</span>}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <RecentFilesList tabs={tabs} />
     </Panel>
   );
 }

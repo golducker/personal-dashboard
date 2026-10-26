@@ -30,8 +30,8 @@ function greeting(now: Date): string {
   return "Chào buổi tối, gng.";
 }
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ done?: string; drive?: string }> }) {
-  const { done, drive } = await searchParams;
+export default async function Home({ searchParams }: { searchParams: Promise<{ done?: string }> }) {
+  const { done } = await searchParams;
   const now = new Date();
   // "Thứ Hai, 26 tháng 10, 2026" → title without the year
   const title = formatLongDate(now).split(", ").slice(0, 2).join(", ");
@@ -61,7 +61,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
           <DeadlinePanel className={LAYOUT.deadlines} showDone={done === "1"} />
         </Suspense>
         <Suspense fallback={<PanelSkeleton title="Drive gần đây" className={LAYOUT.drive} />}>
-          <RecentFilesPanel className={LAYOUT.drive} profile={drive} />
+          <RecentFilesPanel className={LAYOUT.drive} />
         </Suspense>
       </div>
     </div>
