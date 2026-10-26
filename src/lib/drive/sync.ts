@@ -298,14 +298,18 @@ async function applyChanges(
 
 async function getUserToken(db: Db): Promise<string | null> {
   const [row] = await db.select().from(settings).where(eq(settings.key, USER_TOKEN_KEY)).limit(1);
-  return typeof row?.value === "string" ? row.value : null;
+  const v = row?.value;
+  // Stored as { token } because a bare numeric string ("95221") can come back from jsonb as a number.
+  const raw = v && typeof v === "object" && "token" in v ? (v as { token: unknown }).token : v;
+  return typeof raw === "string" || typeof raw === "number" ? String(raw) : null;
 }
 
 async function setUserToken(db: Db, token: string) {
+  const value = { token };
   await db
     .insert(settings)
-    .values({ key: USER_TOKEN_KEY, value: token })
-    .onConflictDoUpdate({ target: settings.key, set: { value: token } });
+    .values({ key: USER_TOKEN_KEY, value })
+    .onConflictDoUpdate({ target: settings.key, set: { value } });
 }
 
 const RECRAWL_MS = 24 * 60 * 60 * 1000;
