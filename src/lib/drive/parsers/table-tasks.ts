@@ -10,6 +10,12 @@ export function tableTaskTabs(titles: string[], tabs: TabConfig[]): string[] {
   return titles.filter((t) => wanted.has(fold(t)));
 }
 
+/** A lone first-column heading such as "5. CAPTION MẪU" in a tab laid out as several sections. */
+function isSectionHeading(row: string[]): boolean {
+  const filled = row.map((c) => (c ?? "").trim()).filter(Boolean);
+  return filled.length === 1 && (row[0] ?? "").trim() === filled[0] && /^\d+\s*[.)]\s+\S/.test(filled[0]);
+}
+
 export function parseTableTasks(input: {
   fileId: string;
   fileName: string;
@@ -44,6 +50,7 @@ export function parseTableTasks(input: {
     const pending: { i: number; text: string; days: ReturnType<typeof extractDays> }[] = [];
     for (let i = header.index + 1; i < rows.length; i++) {
       const row = rows[i];
+      if (isSectionHeading(row)) break; // the table ends where the tab's next numbered section starts
       if (!cell(row, col.title)) continue;
       let text = cell(row, col.due);
       if (!extractDays(text, 2000).length && col.fallback >= 0) text = cell(row, col.fallback);

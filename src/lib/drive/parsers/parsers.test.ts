@@ -131,4 +131,23 @@ describe("parseTableTasks", () => {
     expect(tabsToFetch(DEFAULT_WORK_CONFIG, ["Timeline", "Lich dang bai", "Other"])).toEqual(["Timeline", "Lich dang bai"]);
     expect(parseSheet(DEFAULT_WORK_CONFIG, { id: "x", name: "y" }, { Other: [["a"]] })).toEqual([]);
   });
+
+  it("stops at the next numbered section of a multi-section tab", () => {
+    const plan = [
+      ["3. KÊNH"],
+      ["Kênh", "Owner"],
+      ["4. LỊCH PHÂN PHỐI"],
+      ["Ngày", "Việc cần làm", "Owner", "Trạng thái"],
+      ["28/10", "Làm kit share", "Thịnh", "Chưa bắt đầu"],
+      ["10h 30/10", "Share bài", "YEO", ""],
+      [],
+      ["6. RỦI RO"],
+      ["Rủi ro", "Khả năng", "Tác động", "Owner"],
+      ["Người mới chỉ đọc", "H", "M", "Thịnh"],
+    ];
+    const tab = { tab: "Plan", title: "Việc cần làm", due: "Ngày", time: "Ngày", assignee: ["Owner"], status: "Trạng thái" };
+    const out = parseTableTasks({ fileId: "S2", fileName: "n", tabs: [tab], values: { Plan: plan }, now: NOW });
+    expect(out.map((r) => r.title)).toEqual(["Làm kit share", "Share bài"]);
+    expect(out[1].dueAt?.toISOString()).toBe("2026-10-30T03:00:00.000Z");
+  });
 });

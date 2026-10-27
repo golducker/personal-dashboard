@@ -31,6 +31,10 @@ describe("parseTimeOfDay", () => {
     expect(parseTimeOfDay("14h")).toBe("14:00");
     expect(parseTimeOfDay("14h30 - 16h")).toBe("14:30");
     expect(parseTimeOfDay("Cả ngày")).toBeNull();
+    expect(parseTimeOfDay("9h sáng 27/10/2026")).toBe("09:00");
+    expect(parseTimeOfDay("19h00 27/10")).toBe("19:00");
+    expect(parseTimeOfDay("10h 28/10")).toBe("10:00");
+    expect(parseTimeOfDay("19h 30/10")).toBe("19:00");
   });
 });
 

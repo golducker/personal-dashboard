@@ -47,7 +47,8 @@ export function parseDue(text: string, defaultYear: number): Date | null {
 
 /** First "HH:mm" / "HHhmm" / "HH:mm - HH:mm" start time in a cell, normalised to "HH:mm". */
 export function parseTimeOfDay(text: string): string | null {
-  const m = text.match(/(\d{1,2})\s*[:h]\s*(\d{2})?/i);
+  // minutes must touch the separator and not start a date: "10h 28/10" is 10:00 on 28/10, not 10:28
+  const m = text.match(/(\d{1,2})\s*[:h](\d{2}(?![/.-]\d))?/i);
   if (!m) return null;
   const h = Number(m[1]);
   const min = m[2] ? Number(m[2]) : 0;
