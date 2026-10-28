@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { diffGrades, gradeOf } from "./grades-diff";
-import { normalizeGrades, type NormalizedGrades } from "./grades";
+import { computeCumulative, normalizeGrades, type NormalizedGrades } from "./grades";
 import { hashValue, stableStringify } from "./hash";
 import { buildGradesMessage, ftugateBodySchema } from "./sync";
 import { escapeHtml } from "../telegram";
@@ -72,6 +72,8 @@ describe("normalizeGrades", () => {
       midterm: null,
       exam: null,
       components: [],
+      gpaExcluded: false,
+      inProgram: null,
     });
     expect(sem.courses[1]).toMatchObject({ credits: 2, score10: null, score4: null, letter: null, midterm: null });
     expect(sem.courses[1].components).toEqual([{ code: "C1", name: "Giữa kỳ", weight: 30, score: null }]);
@@ -82,6 +84,54 @@ describe("normalizeGrades", () => {
     expect(normalizeGrades({ grades: { foo: 1 } })).toBeNull();
     expect(normalizeGrades({ grades: { ds_diem_hocky: [1] } })).toBeNull();
     expect(normalizeGrades({ grades: { ds_diem_hocky: [{ hoc_ky: "1", ds_diem_mon_hoc: "no" }] } })).toBeNull();
+  });
+});
+
+describe("computeCumulative", () => {
+  const course = (ma_mon: string, so_tin_chi: number, diem_tk: number | null, diem_tk_so: number | null, extra: object = {}) => ({
+    ma_mon,
+    so_tin_chi,
+    diem_tk,
+    diem_tk_so,
+    khong_tinh_diem_tbtl: 0,
+    mon_hoc_nganh: true,
+    ...extra,
+  });
+  const payload = {
+    ds_diem_hocky: [
+      {
+        hoc_ky: "20251",
+        dtb_hk_he4: 3.6,
+        ds_diem_mon_hoc: [
+          course("AAA100", 3, 8.5, 4),
+          course("BBB200", 2, 7, 3),
+          course("RETAKE", 3, 3, 0),
+          course("GDTC1", 1, 5, 1, { khong_tinh_diem_tbtl: 1, mon_hoc_nganh: false }),
+          course("GDQP", 8, 7, 3, { khong_tinh_diem_tbtl: 1 }),
+        ],
+      },
+      {
+        hoc_ky: "20252",
+        dtb_hk_he4: null,
+        ds_diem_mon_hoc: [
+          // unfinalised semester: FTUgate flags graded courses as excluded too
+          course("CCC300", 2, 7.7, 3, { khong_tinh_diem_tbtl: 1 }),
+          course("RETAKE", 3, 9, 4, { khong_tinh_diem_tbtl: 1 }),
+          course("GDTC2", 2, 6, 2, { khong_tinh_diem_tbtl: 1 }),
+          course("DDD400", 3, null, null, { khong_tinh_diem_tbtl: 1 }),
+        ],
+      },
+    ],
+  };
+  it("counts new grades before FTUgate does, skipping GDTC/GDQP and older attempts", () => {
+    // AAA 3×4, BBB 2×3, CCC 2×3, RETAKE 3×4 → 36 / 10
+    expect(computeCumulative(norm(payload))).toEqual({ gpa4: 3.6, gpa10: 8.19, credits: 10, ahead: true });
+  });
+  it("matches FTUgate once nothing is pending", () => {
+    const p = clone(payload);
+    p.ds_diem_hocky.pop();
+    // AAA 3×4, BBB 2×3, failed RETAKE left out → 18 / 5
+    expect(computeCumulative(norm(p))).toEqual({ gpa4: 3.6, gpa10: 7.9, credits: 5, ahead: false });
   });
 });
 
@@ -109,7 +159,7 @@ describe("diffGrades", () => {
   it("ignores ungraded courses, including new ones", () => {
     const prev = norm(fixture);
     const next = clone(prev);
-    next.semesters[1].courses.push({ code: "CCC300", name: "C", credits: 3, score10: null, score4: null, letter: null, midterm: null, exam: null, components: [] });
+    next.semesters[1].courses.push({ code: "CCC300", name: "C", credits: 3, score10: null, score4: null, letter: null, midterm: null, exam: null, components: [], gpaExcluded: false, inProgram: null });
     expect(diffGrades(prev, next)).toEqual([]);
   });
   it("detects a new component score before the final grade", () => {

@@ -12,6 +12,10 @@ export type NormalizedCourse = {
   exam: number | null;
   /** Component scores (chuyên cần, giữa kỳ…) that show up during the semester, before the final grade. */
   components: NormalizedComponent[];
+  /** FTUgate's "khong_tinh_diem_tbtl" flag. Only trustworthy once the semester is finalised. */
+  gpaExcluded: boolean;
+  /** false for courses outside the programme (GDTC…). */
+  inProgram: boolean | null;
 };
 
 export type NormalizedComponent = {
@@ -57,6 +61,8 @@ const F = {
   compName: "ten_thanh_phan",
   compWeight: "trong_so",
   compScore: "diem_thanh_phan",
+  gpaExcluded: "khong_tinh_diem_tbtl",
+  inProgram: "mon_hoc_nganh",
 } as const;
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -117,6 +123,8 @@ export function normalizeGrades(payload: unknown): NormalizedGrades | null {
         midterm: num(c[F.midterm]),
         exam: num(c[F.exam]),
         components,
+        gpaExcluded: num(c[F.gpaExcluded]) === 1,
+        inProgram: typeof c[F.inProgram] === "boolean" ? (c[F.inProgram] as boolean) : null,
       });
     }
     semesters.push({
@@ -133,4 +141,53 @@ export function normalizeGrades(payload: unknown): NormalizedGrades | null {
   // newest first (FTUgate already sends them that way; codes are like "20261")
   semesters.sort((a, b) => b.code.localeCompare(a.code));
   return { semesters };
+}
+
+export type CumulativeGpa = {
+  gpa4: number | null;
+  gpa10: number | null;
+  credits: number;
+  /** True when it includes grades FTUgate hasn't folded into its own cumulative figures yet. */
+  ahead: boolean;
+};
+
+// GDTC/GDQP never count towards the GPA. FTUgate flags them, but in a semester that isn't finalised
+// it flags every course the same way, so the code is the only signal there.
+const NON_GPA_CODE = /^(GDTC|GDQP)/i;
+
+const round2 = (v: number) => Math.round(v * 100) / 100;
+
+/**
+ * Cumulative GPA and credits worked out from the course list, so a new grade counts right away instead of
+ * waiting for FTUgate to recompute. Credit-weighted mean of passed courses, latest attempt per course.
+ */
+export function computeCumulative(g: NormalizedGrades): CumulativeGpa {
+  const latest = new Map<string, { c: NormalizedCourse; finalized: boolean }>();
+  for (const s of [...g.semesters].reverse()) {
+    const finalized = s.gpa4 !== null;
+    for (const c of s.courses) {
+      if (c.score4 === null || c.credits === null) continue;
+      const counts = finalized ? !c.gpaExcluded : c.inProgram !== false && !NON_GPA_CODE.test(c.code);
+      if (counts) latest.set(c.code, { c, finalized });
+      else latest.delete(c.code);
+    }
+  }
+
+  let credits = 0;
+  let sum4 = 0;
+  let sum10 = 0;
+  let ahead = false;
+  for (const { c, finalized } of latest.values()) {
+    if (c.score4 === null || c.credits === null || c.score4 <= 0) continue; // F is not accumulated
+    credits += c.credits;
+    sum4 += c.score4 * c.credits;
+    sum10 += (c.score10 ?? 0) * c.credits;
+    if (!finalized) ahead = true;
+  }
+  return {
+    gpa4: credits ? round2(sum4 / credits) : null,
+    gpa10: credits ? round2(sum10 / credits) : null,
+    credits,
+    ahead,
+  };
 }

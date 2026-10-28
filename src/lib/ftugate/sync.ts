@@ -5,7 +5,7 @@ import { FTU_KINDS, ftuSnapshots, gradeEvents, syncRuns, type FtuKind } from "@/
 import { sendPushSafe } from "@/lib/push";
 import { escapeHtml, sendTelegram } from "@/lib/telegram";
 import { diffGrades, gradeOf, type GradeChange } from "./grades-diff";
-import { normalizeGrades, type NormalizedGrades } from "./grades";
+import { computeCumulative, normalizeGrades, type NormalizedGrades } from "./grades";
 import { hashValue } from "./hash";
 
 export const MAX_BODY_BYTES = 3 * 1024 * 1024;
@@ -114,9 +114,7 @@ export function buildGradesPushBody(events: { courseName: string }[]): string {
 }
 
 function latestCumGpa4(g: NormalizedGrades | null): number | null {
-  if (!g) return null;
-  // semesters are newest first; the current one has no GPA yet
-  return g.semesters.find((s) => s.cumGpa4 !== null)?.cumGpa4 ?? null;
+  return g ? computeCumulative(g).gpa4 : null;
 }
 
 /** Inserts new grade events and sends one Telegram message for every un-notified event. */

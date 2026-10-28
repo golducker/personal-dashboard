@@ -2,7 +2,7 @@ import { cache } from "react";
 import Link from "next/link";
 import { Chalkboard, Exam, GraduationCap, Megaphone } from "@phosphor-icons/react/dist/ssr";
 import { getFtuData } from "@/lib/ftugate/dashboard";
-import type { NormalizedCourse, NormalizedSemester } from "@/lib/ftugate/grades";
+import { computeCumulative, type NormalizedCourse, type NormalizedSemester } from "@/lib/ftugate/grades";
 import { shortDayLabel, type ExamView } from "@/lib/ftugate/view";
 import { Empty, Panel, Pill } from "./card";
 
@@ -153,7 +153,7 @@ const fmt = (v: number | null, digits = 2) => (v === null ? "-" : v.toFixed(digi
 export async function GradesPanel({ className }: { className?: string }) {
   const { grades, recentGrades, hasAny } = await loadFtu();
   const semesters = grades?.semesters ?? [];
-  const summary = semesters.find((s) => s.cumGpa4 !== null) ?? null;
+  const summary = grades ? computeCumulative(grades) : null;
   const shown: NormalizedSemester | null = semesters.find((s) => s.courses.some(hasScore)) ?? null;
   const past = semesters.filter((s) => s !== shown && s.gpa4 !== null);
 
@@ -164,9 +164,10 @@ export async function GradesPanel({ className }: { className?: string }) {
       ) : (
         <div className="space-y-5">
           <div className="grid grid-cols-3 gap-4 rounded-xl bg-surface-2 p-4">
-            <Stat label="GPA tích lũy (hệ 4)" value={fmt(summary?.cumGpa4 ?? null)} strong />
-            <Stat label="Hệ 10" value={fmt(summary?.cumGpa10 ?? null)} />
-            <Stat label="Tín chỉ tích lũy" value={summary?.cumCredits === null || !summary ? "-" : String(summary.cumCredits)} />
+            <Stat label="GPA tích lũy (hệ 4)" value={fmt(summary?.gpa4 ?? null)} strong />
+            <Stat label="Hệ 10" value={fmt(summary?.gpa10 ?? null)} />
+            <Stat label="Tín chỉ tích lũy" value={summary?.credits ? String(summary.credits) : "-"} />
+            {summary?.ahead && <p className="col-span-3 text-xs text-ink-3">Đã tính cả điểm mới, FTUgate chưa cập nhật.</p>}
           </div>
 
           {shown && (
