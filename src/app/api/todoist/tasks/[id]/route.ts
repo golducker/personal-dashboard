@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { apiError } from "@/lib/api";
-import { updateTask } from "@/lib/todoist";
+import { queueOrRun } from "@/lib/todoist-offline";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,8 @@ const patchBody = z.object({
 export async function PATCH(request: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await ctx.params;
-    return NextResponse.json({ task: await updateTask(id, patchBody.parse(await request.json())) });
+    const r = await queueOrRun("update", id, patchBody.parse(await request.json()));
+    return r.queued ? NextResponse.json(r, { status: 202 }) : NextResponse.json({ task: r.task });
   } catch (e) {
     return apiError(e);
   }

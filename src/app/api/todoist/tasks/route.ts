@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { apiError } from "@/lib/api";
-import { createTask, getTodayAndOverdue, getUpcoming } from "@/lib/todoist";
+import { getTodayAndOverdue, getUpcoming } from "@/lib/todoist";
+import { queueOrRun } from "@/lib/todoist-offline";
 
 export const dynamic = "force-dynamic";
 
@@ -28,8 +29,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
   try {
-    const task = await createTask(taskBody.parse(await request.json()));
-    return NextResponse.json({ task }, { status: 201 });
+    const r = await queueOrRun("create", null, taskBody.parse(await request.json()));
+    return r.queued ? NextResponse.json(r, { status: 202 }) : NextResponse.json({ task: r.task }, { status: 201 });
   } catch (e) {
     return apiError(e);
   }

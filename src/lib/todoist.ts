@@ -19,6 +19,16 @@ export class TodoistError extends Error {
   }
 }
 
+export const TODOIST_UNAVAILABLE_MESSAGE = "Todoist đang bảo trì hoặc không phản hồi";
+
+/** Todoist is in maintenance, rate-limited or unreachable (5xx, 429, network). */
+export class TodoistUnavailableError extends TodoistError {
+  constructor(status = 503) {
+    super(status, TODOIST_UNAVAILABLE_MESSAGE);
+    this.name = "TodoistUnavailableError";
+  }
+}
+
 export type TodoTask = {
   id: string;
   content: string;
@@ -82,11 +92,17 @@ export async function collectPages<T>(
 async function request<T>(path: string, init: RequestInit = {}): Promise<T | null> {
   const token = process.env.TODOIST_API_TOKEN;
   if (!token) throw new TodoistNotConfiguredError();
-  const res = await fetch(`${BASE}${path}`, {
-    ...init,
-    headers: { ...init.headers, authorization: `Bearer ${token}`, ...(init.body ? { "content-type": "application/json" } : {}) },
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      ...init,
+      headers: { ...init.headers, authorization: `Bearer ${token}`, ...(init.body ? { "content-type": "application/json" } : {}) },
+      cache: "no-store",
+    });
+  } catch {
+    throw new TodoistUnavailableError(0);
+  }
+  if (res.status >= 500 || res.status === 429) throw new TodoistUnavailableError(res.status);
   if (res.status === 204) return null;
   const text = await res.text();
   if (!res.ok) throw new TodoistError(res.status, text.slice(0, 200) || `Todoist lỗi ${res.status}`);

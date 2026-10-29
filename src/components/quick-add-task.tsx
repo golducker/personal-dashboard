@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { call } from "./api-client";
 import { BTN_PRIMARY, INPUT } from "./card";
+import { showToast } from "./toast";
 
 export function QuickAddTask() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export function QuickAddTask() {
     const r = await call("POST", "/api/todoist/tasks", { content, due_string: due.trim() || "hôm nay" });
     setBusy(false);
     if (!r.ok) return setError(r.error);
+    if (r.data.queued) showToast({ message: "Đã lưu, sẽ đồng bộ khi Todoist hoạt động lại" });
     setContent("");
     setDue("");
     router.refresh();

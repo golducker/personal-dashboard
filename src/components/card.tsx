@@ -91,6 +91,7 @@ export function SourceProblem({
   failure: Extract<Loaded<unknown>, { ok: false }>;
   name: "Google" | "Todoist";
 }) {
+  const maintenance = failure.kind === "error" && /maintenance|bảo trì|503/i.test(failure.message);
   const connect = failure.kind === "not_connected" || failure.kind === "expired";
   const title =
     failure.kind === "not_connected"
@@ -106,7 +107,11 @@ export function SourceProblem({
       {failure.kind === "error" && (
         // Raw API errors can be long JSON; show a readable line and keep the detail in the tooltip.
         <p className="line-clamp-2 break-words text-danger" title={failure.message}>
-          {/401|unauthori[sz]ed/i.test(failure.message) ? "Token không hợp lệ hoặc đã bị thu hồi." : failure.message}
+          {maintenance
+            ? `${name} đang bảo trì, thử lại sau.`
+            : /401|unauthori[sz]ed/i.test(failure.message)
+              ? "Token không hợp lệ hoặc đã bị thu hồi."
+              : failure.message}
         </p>
       )}
       {failure.kind === "not_configured" && <p className="text-ink-2">Thêm TODOIST_API_TOKEN vào biến môi trường.</p>}
@@ -116,9 +121,11 @@ export function SourceProblem({
             {failure.kind === "expired" ? "Kết nối lại Google" : "Kết nối Google"}
           </a>
         )}
-        <Link href="/settings" className={BTN_GHOST}>
-          Mở cài đặt
-        </Link>
+        {!maintenance && (
+          <Link href="/settings" className={BTN_GHOST}>
+            Mở cài đặt
+          </Link>
+        )}
       </div>
     </div>
   );

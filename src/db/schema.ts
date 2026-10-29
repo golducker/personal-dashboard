@@ -1,4 +1,5 @@
 import {
+  bigserial,
   boolean,
   index,
   integer,
@@ -195,4 +196,16 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
 export const settings = pgTable("settings", {
   key: text("key").primaryKey(),
   value: jsonb("value").notNull(),
+});
+
+/** Todoist writes made while the API was down; replayed in `seq` order (see src/lib/todoist-offline.ts). */
+export const todoistOutbox = pgTable("todoist_outbox", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  seq: bigserial("seq", { mode: "number" }).notNull(),
+  op: text("op", { enum: ["create", "update", "close", "reopen"] }).notNull(),
+  taskId: text("task_id").notNull(),
+  payload: jsonb("payload"),
+  createdAt: tstz("created_at").notNull().defaultNow(),
+  attempts: integer("attempts").notNull().default(0),
+  lastError: text("last_error"),
 });

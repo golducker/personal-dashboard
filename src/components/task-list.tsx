@@ -31,11 +31,12 @@ function Row({ task, overdue, onClose }: { task: TaskView; overdue?: boolean; on
       </button>
       <div className="min-w-0 flex-1">
         <p className="text-sm leading-5 break-words">{task.content}</p>
-        {(task.dueLabel || task.projectName) && (
+        {(task.dueLabel || task.projectName || task.pending) && (
           <p className="text-xs text-ink-2">
             {task.dueLabel && <span className={overdue ? "font-medium text-danger" : ""}>{task.dueLabel}</span>}
             {task.dueLabel && task.projectName ? ", " : ""}
             {task.projectName}
+            {task.pending && <span className="text-ink-3">{task.dueLabel || task.projectName ? " · " : ""}chờ đồng bộ</span>}
           </p>
         )}
       </div>

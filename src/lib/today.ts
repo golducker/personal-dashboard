@@ -61,6 +61,8 @@ export type TaskView = {
   priority: 1 | 2 | 3 | 4;
   projectName: string | null;
   dueLabel: string;
+  /** Change not yet synced to Todoist. */
+  pending?: boolean;
 };
 
 /** Due time label: "HH:mm" for timed due dates, "" for date-only. */
