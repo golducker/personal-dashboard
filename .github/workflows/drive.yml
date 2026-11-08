@@ -18,7 +18,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # A fresh copy of the repo has no secrets yet: skip quietly instead of failing every 30 minutes.
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      ok: ${{ steps.c.outputs.ok }}
+    steps:
+      - id: c
+        env:
+          SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+        run: |
+          if [ -n "$SYNC_SECRET" ] && [ -n "$DASHBOARD_URL" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "Secrets not set, skipping"; fi
+
   sync:
+    needs: check
+    if: needs.check.outputs.ok == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:

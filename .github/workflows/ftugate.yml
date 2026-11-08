@@ -22,7 +22,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # A fresh copy of the repo (or a non-FTU student) has no FTU secrets: skip quietly instead of failing.
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      ok: ${{ steps.c.outputs.ok }}
+    steps:
+      - id: c
+        env:
+          FTU_USERNAME: ${{ secrets.FTU_USERNAME }}
+          SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+        run: |
+          if [ -n "$FTU_USERNAME" ] && [ -n "$SYNC_SECRET" ] && [ -n "$DASHBOARD_URL" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "Secrets not set, skipping"; fi
+
   sync:
+    needs: check
+    if: needs.check.outputs.ok == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
