@@ -4,7 +4,8 @@ import { MascotStatic } from "@/components/mascot";
 
 export const metadata: Metadata = { title: "Privacy Policy · Personal Dashboard" };
 
-const CONTACT = "lethinh512.stu@gmail.com";
+// Each deployment has its own owner; Google's OAuth review wants a contact here.
+const CONTACT = process.env.CONTACT_EMAIL?.trim();
 
 // Public page: Google requires a privacy policy URL before the OAuth app can be published.
 export default function PrivacyPage() {
@@ -45,8 +46,7 @@ export default function PrivacyPage() {
 
       <Section title="How the data is stored">
         The Google refresh token is encrypted (AES-256-GCM) before it is saved. Calendar events are fetched on demand
-        and not stored. Drive file metadata and the tasks extracted from spreadsheets are cached in a private database (Neon Postgres,
-        Singapore) so the dashboard loads quickly. Data is never sold, shared with third parties, used for
+        and not stored. Drive file metadata and the tasks extracted from spreadsheets are cached in the owner&apos;s private database so the dashboard loads quickly. Data is never sold, shared with third parties, used for
         advertising, or used to train AI models.
       </Section>
 
@@ -71,11 +71,13 @@ export default function PrivacyPage() {
         . Disconnecting deletes the stored token.
       </Section>
 
-      <Section title="Contact">
-        <a className="underline" href={`mailto:${CONTACT}`}>
-          {CONTACT}
-        </a>
-      </Section>
+      {CONTACT && (
+        <Section title="Contact">
+          <a className="underline" href={`mailto:${CONTACT}`}>
+            {CONTACT}
+          </a>
+        </Section>
+      )}
     </main>
   );
 }

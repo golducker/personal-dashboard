@@ -51,6 +51,7 @@ export function HeroView({ stats }: { stats: Stats | null }) {
   const date = formatLongDate(now);
   const line = summaryLine({ overdue: stats?.overdue ?? null, today: stats?.dueToday ?? null });
   const s = stats ?? { dueToday: null, overdue: null, events: null };
+  const name = process.env.OWNER_NAME?.trim();
 
   return (
     <section className="hero-stage mb-6 pt-4 pb-6 md:mb-8 md:pt-8 md:pb-8" aria-label="Tổng quan hôm nay">
@@ -58,7 +59,13 @@ export function HeroView({ stats }: { stats: Stats | null }) {
         <div className="col-start-1 row-start-1 min-w-0 space-y-2 self-start">
           <p className="text-sm font-medium text-ink-2 first-letter:uppercase">{date}</p>
           <h1 className="font-display text-[32px] leading-[1.02] font-bold tracking-[-0.03em] text-balance md:text-[56px]">
-            {greeting(hour)},<br className="max-sm:hidden" /> Thịnh.
+            {name ? (
+              <>
+                {greeting(hour)},<br className="max-sm:hidden" /> {name}.
+              </>
+            ) : (
+              `${greeting(hour)}.`
+            )}
           </h1>
         </div>
 

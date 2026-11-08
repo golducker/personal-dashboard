@@ -138,12 +138,12 @@ describe("parseTableTasks", () => {
       ["Kênh", "Owner"],
       ["4. LỊCH PHÂN PHỐI"],
       ["Ngày", "Việc cần làm", "Owner", "Trạng thái"],
-      ["28/10", "Làm kit share", "Thịnh", "Chưa bắt đầu"],
+      ["28/10", "Làm kit share", "Chi", "Chưa bắt đầu"],
       ["10h 30/10", "Share bài", "YEO", ""],
       [],
       ["6. RỦI RO"],
       ["Rủi ro", "Khả năng", "Tác động", "Owner"],
-      ["Người mới chỉ đọc", "H", "M", "Thịnh"],
+      ["Người mới chỉ đọc", "H", "M", "Chi"],
     ];
     const tab = { tab: "Plan", title: "Việc cần làm", due: "Ngày", time: "Ngày", assignee: ["Owner"], status: "Trạng thái" };
     const out = parseTableTasks({ fileId: "S2", fileName: "n", tabs: [tab], values: { Plan: plan }, now: NOW });
