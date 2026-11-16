@@ -209,3 +209,20 @@ export const todoistOutbox = pgTable("todoist_outbox", {
   attempts: integer("attempts").notNull().default(0),
   lastError: text("last_error"),
 });
+
+/** Daily checklist items; "done today" lives in daily_log, so a new day starts unticked with no reset job. */
+export const dailyItems = pgTable("daily_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  createdAt: tstz("created_at").notNull().defaultNow(),
+});
+
+/** One row per item ticked per day (Asia/Ho_Chi_Minh). No FK: deleting an item keeps the XP it earned. */
+export const dailyLog = pgTable(
+  "daily_log",
+  {
+    itemId: uuid("item_id").notNull(),
+    day: text("day").notNull(), // YYYY-MM-DD
+  },
+  (t) => [primaryKey({ columns: [t.itemId, t.day] })],
+);

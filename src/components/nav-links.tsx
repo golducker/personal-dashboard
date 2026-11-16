@@ -1,12 +1,13 @@
 "use client";
 
-import { Briefcase, GearSix, House, Pulse } from "@phosphor-icons/react";
+import { Briefcase, CheckSquare, GearSix, House, Pulse } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLayoutEffect, useRef } from "react";
 
 export const NAV = [
   { href: "/", label: "Hôm nay", icon: House },
+  { href: "/daily", label: "Hằng ngày", icon: CheckSquare },
   { href: "/work", label: "Công việc", icon: Briefcase },
   { href: "/settings", label: "Cài đặt", icon: GearSix },
   { href: "/health", label: "Tình trạng", icon: Pulse },
@@ -77,7 +78,7 @@ export function TabBar() {
   const idx = activeIndex(pathname);
   return (
     <nav className="tabbar md:hidden" aria-label="Điều hướng chính">
-      <div className="relative grid grid-cols-4 p-1.5">
+      <div className="relative grid grid-cols-5 p-1.5">
         <span
           className="tab-ind"
           aria-hidden
