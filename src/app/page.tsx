@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { CalendarSection } from "@/components/calendar-section";
+import { DailySection } from "@/components/daily-section";
 import { DeadlinePanel, RecentFilesPanel } from "@/components/deadline-sections";
 import { PanelSkeleton } from "@/components/card";
 import { ExamList, GradesPanel, NoticeList, WeekSchedule } from "@/components/ftu-sections";
@@ -31,9 +32,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
         <Suspense fallback={<PanelSkeleton title="Lịch hôm nay" className={LAYOUT.calendar} />}>
           <CalendarSection className={LAYOUT.calendar} />
         </Suspense>
-        <Suspense fallback={<PanelSkeleton title="Việc cần làm" className={LAYOUT.tasks} />}>
-          <TasksSection className={LAYOUT.tasks} />
-        </Suspense>
+        {/* tasks and the daily checklist share the right column */}
+        <div className={`space-y-5 ${LAYOUT.tasks}`}>
+          <Suspense fallback={<PanelSkeleton title="Việc cần làm" />}>
+            <TasksSection />
+          </Suspense>
+          <Suspense fallback={<PanelSkeleton title="Hôm nay" rows={3} />}>
+            <DailySection />
+          </Suspense>
+        </div>
         <Suspense fallback={<PanelSkeleton title="Deadline" rows={4} className={LAYOUT.deadlines} />}>
           <DeadlinePanel className={LAYOUT.deadlines} showDone={done === "1"} />
         </Suspense>
