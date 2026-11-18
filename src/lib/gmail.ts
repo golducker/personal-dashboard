@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { settings } from "@/db/schema";
+import { calendarIdByName } from "./calendar";
 import { extractDays } from "./drive/dates";
 import { getConnection, googleFetch } from "./google";
 import { recordRun } from "./run-log";
@@ -9,7 +10,9 @@ import { createTask } from "./todoist";
 
 export const GMAIL_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
 const GMAIL = "https://gmail.googleapis.com/gmail/v1/users/me";
-const CALENDAR = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
+const CALENDARS = "https://www.googleapis.com/calendar/v3/calendars";
+// shortcut: target calendar is found by name; renaming "Khác" sends events to primary until this is updated.
+export const MAIL_CALENDAR_NAME = "Khác";
 const SEEN_KEY = "gmail_seen";
 const SEEN_CAP = 2000;
 
@@ -123,7 +126,7 @@ async function mailToTask(id: string): Promise<void> {
   });
 }
 
-async function mailToEvent(id: string): Promise<boolean> {
+async function mailToEvent(id: string, calendarId: string): Promise<boolean> {
   const msg = await getMessage(id, "full");
   const part = findIcsPart(msg.payload);
   if (!part) return false;
@@ -134,10 +137,13 @@ async function mailToEvent(id: string): Promise<boolean> {
       : "";
   const ev = raw ? parseIcs(decode(raw)) : null;
   if (!ev) return false;
-  // Google invites already sit in the calendar; import only what is not there yet.
-  const existing = await googleFetch<{ items?: unknown[] }>(`${CALENDAR}?${new URLSearchParams({ iCalUID: ev.uid })}`);
-  if (existing?.items?.length) return false;
-  await googleFetch(`${CALENDAR}/import`, {
+  // Google invites already sit in primary, earlier imports in the target calendar: skip either.
+  for (const cal of new Set(["primary", calendarId])) {
+    const qs = new URLSearchParams({ iCalUID: ev.uid });
+    const existing = await googleFetch<{ items?: unknown[] }>(`${CALENDARS}/${encodeURIComponent(cal)}/events?${qs}`);
+    if (existing?.items?.length) return false;
+  }
+  await googleFetch(`${CALENDARS}/${encodeURIComponent(calendarId)}/events/import`, {
     method: "POST",
     body: JSON.stringify({
       iCalUID: ev.uid,
@@ -169,7 +175,11 @@ export async function runGmailSync(): Promise<GmailSyncResult> {
       if (process.env.TODOIST_API_TOKEN) {
         for (const id of await listIds(TASK_QUERY)) jobs.push([`t:${id}`, () => mailToTask(id).then(() => result.tasks++)]);
       }
-      for (const id of await listIds(INVITE_QUERY)) jobs.push([`c:${id}`, async () => (await mailToEvent(id)) && result.events++]);
+      const inviteIds = await listIds(INVITE_QUERY);
+      if (inviteIds.length) {
+        const target = await calendarIdByName(MAIL_CALENDAR_NAME);
+        for (const id of inviteIds) jobs.push([`c:${id}`, async () => (await mailToEvent(id, target)) && result.events++]);
+      }
 
       for (const [key, job] of jobs) {
         if (seen.has(key)) continue;

@@ -3,7 +3,7 @@ import { getDb } from "@/db";
 import { settings } from "@/db/schema";
 import { googleFetch } from "./google";
 import { recordRun } from "./run-log";
-import { TZ, addDays } from "./time";
+import { TZ, addDays, dayKey, localDateTime, timeLabel } from "./time";
 
 const BASE = "https://www.googleapis.com/calendar/v3";
 
@@ -89,6 +89,28 @@ export async function setCalendarColor(id: string, color: string): Promise<void>
   const value = { ...(await getCalendarColors()), [id]: color.toLowerCase() };
   const db = await getDb();
   await db.insert(settings).values({ key: COLORS_KEY, value }).onConflictDoUpdate({ target: settings.key, set: { value } });
+}
+
+/** Id of the writable calendar with this exact name, else "primary". */
+export async function calendarIdByName(name: string): Promise<string> {
+  return (await listCalendars()).find((c) => c.name === name && c.writable)?.id ?? "primary";
+}
+
+export const TASK_CALENDAR_NAME = "Daily task";
+const DEFAULT_BLOCK_MIN = 30;
+
+/**
+ * Time block for a Todoist due that has a clock time ("2026-11-18T09:00:00" floating, or an instant with Z/offset).
+ * `endTime` is "HH:mm" on the same day (earlier than the start = past midnight); none = 30 minutes. Date-only due -> null.
+ */
+export function taskBlock(due: string, endTime?: string): { start: string; end: string } | null {
+  if (!due.includes("T")) return null;
+  const instant = /(Z|[+-]\d{2}:\d{2})$/.test(due);
+  const date = instant ? dayKey(due) : due.slice(0, 10);
+  const time = instant ? timeLabel(due) : due.slice(11, 16);
+  const start = localDateTime(date, time);
+  if (!endTime) return { start, end: new Date(Date.parse(start) + DEFAULT_BLOCK_MIN * 60_000).toISOString() };
+  return { start, end: localDateTime(endTime > time ? date : addDays(date, 1), endTime) };
 }
 
 export async function listCalendars(): Promise<CalendarInfo[]> {
