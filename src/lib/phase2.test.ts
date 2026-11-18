@@ -5,7 +5,7 @@ import { decrypt, deriveKey, encrypt } from "./crypto";
 import { buildAuthUrl, checkOAuthState, emailFromIdToken } from "./google";
 import { decideStatus } from "./health";
 import { shouldWriteRun } from "./run-log";
-import { dayKey, groupByDay, startOfDay } from "./time";
+import { dayKey, groupByDay, startOfDay, weekStart } from "./time";
 import { collectPages, mapTask, splitByDue } from "./todoist";
 
 describe("token encryption", () => {
@@ -144,5 +144,14 @@ describe("health status", () => {
     expect(decideStatus({ configured: false, needsConnection: true, connected: false, latest: null })).toBe("not_configured");
     expect(decideStatus({ configured: true, needsConnection: true, connected: true, latest: "success" })).toBe("ok");
     expect(decideStatus({ configured: true, needsConnection: false, connected: false, latest: "error" })).toBe("error");
+  });
+});
+
+describe("weekStart", () => {
+  it("returns Monday for any day of the week", () => {
+    expect(weekStart("2026-11-16")).toBe("2026-11-16"); // Mon
+    expect(weekStart("2026-11-18")).toBe("2026-11-16"); // Wed
+    expect(weekStart("2026-11-22")).toBe("2026-11-16"); // Sun
+    expect(weekStart("2027-01-01")).toBe("2026-12-28"); // across a year
   });
 });

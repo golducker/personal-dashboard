@@ -72,3 +72,9 @@ export function groupByDay<T extends DayEntry>(events: T[]): Array<{ day: string
     ),
   }));
 }
+
+/** Monday (YYYY-MM-DD) of the week containing `day`. */
+export function weekStart(day: string): string {
+  const dow = new Date(`${day}T00:00:00Z`).getUTCDay(); // 0 = Sunday
+  return addDays(day, -((dow + 6) % 7));
+}
