@@ -1,3 +1,6 @@
+import { eq } from "drizzle-orm";
+import { getDb } from "@/db";
+import { settings } from "@/db/schema";
 import { googleFetch } from "./google";
 import { recordRun } from "./run-log";
 import { TZ, addDays } from "./time";
@@ -72,9 +75,31 @@ export function normalizeEvent(e: GEvent, cal: Pick<CalendarInfo, "id" | "name" 
   };
 }
 
+const COLORS_KEY = "calendar_colors";
+export const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
+/** Colors picked in Settings, by calendar id; they win over Google's calendar color everywhere. */
+export async function getCalendarColors(): Promise<Record<string, string>> {
+  const db = await getDb();
+  const [row] = await db.select().from(settings).where(eq(settings.key, COLORS_KEY)).limit(1);
+  return (row?.value as Record<string, string> | undefined) ?? {};
+}
+
+export async function setCalendarColor(id: string, color: string): Promise<void> {
+  const value = { ...(await getCalendarColors()), [id]: color.toLowerCase() };
+  const db = await getDb();
+  await db.insert(settings).values({ key: COLORS_KEY, value }).onConflictDoUpdate({ target: settings.key, set: { value } });
+}
+
 export async function listCalendars(): Promise<CalendarInfo[]> {
-  const data = await googleFetch<{ items?: GCalendar[] }>(`${BASE}/users/me/calendarList?minAccessRole=reader`);
-  return (data?.items ?? []).map(normalizeCalendar);
+  const [data, colors] = await Promise.all([
+    googleFetch<{ items?: GCalendar[] }>(`${BASE}/users/me/calendarList?minAccessRole=reader`),
+    getCalendarColors(),
+  ]);
+  return (data?.items ?? []).map((c) => {
+    const cal = normalizeCalendar(c);
+    return colors[cal.id] ? { ...cal, color: colors[cal.id] } : cal;
+  });
 }
 
 /** Events across all selected calendars between `from` and `to` (ISO instants). */

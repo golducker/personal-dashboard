@@ -6,6 +6,8 @@ import { LogoutButton } from "@/components/logout-button";
 import { BTN_PRIMARY, Panel, Pill } from "@/components/card";
 import { DriveSourcesPanel } from "@/components/drive-sources";
 import { DisconnectGoogleButton } from "@/components/disconnect-google-button";
+import { CalendarColors } from "@/components/calendar-colors";
+import { listCalendars } from "@/lib/calendar";
 import { getConnection } from "@/lib/google";
 import { isConfigured } from "@/lib/sources";
 
@@ -34,6 +36,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const conn = await getConnection().catch(() => null);
   const googleReady = isConfigured("google_calendar");
   const todoistReady = isConfigured("todoist");
+  const calendars = conn ? (await listCalendars().catch(() => [])).filter((c) => c.selected) : [];
   const scopes = (conn?.scopes ?? []).map((s) => SCOPE_LABELS[s]).filter(Boolean);
 
   return (
@@ -67,6 +70,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               )}
               {conn && <DisconnectGoogleButton />}
             </div>
+            {calendars.length > 0 && <CalendarColors calendars={calendars.map(({ id, name, color }) => ({ id, name, color }))} />}
           </div>
         </Panel>
 
