@@ -19,3 +19,13 @@ describe("taskBlock", () => {
     });
   });
 });
+
+import { dedupeEvents, type CalEvent } from "./calendar";
+
+describe("dedupeEvents", () => {
+  const ev = (id: string, calendarId: string) => ({ id, calendarId }) as CalEvent;
+  it("keeps the non-primary copy of an event that sits in two calendars", () => {
+    const out = dedupeEvents([ev("a", "me"), ev("a", "work"), ev("b", "me"), ev("c", "work"), ev("c", "me")], "me");
+    expect(out.map((e) => `${e.id}:${e.calendarId}`).sort()).toEqual(["a:work", "b:me", "c:work"]);
+  });
+});

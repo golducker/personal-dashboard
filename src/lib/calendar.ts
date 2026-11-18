@@ -131,6 +131,19 @@ export async function listCalendars(): Promise<CalendarInfo[]> {
   });
 }
 
+/**
+ * A meeting moved to another calendar keeps a guest copy (same event id) in the primary calendar.
+ * Show it once, from the non-primary calendar, so it gets that calendar's color.
+ */
+export function dedupeEvents(events: CalEvent[], primaryId?: string): CalEvent[] {
+  const byId = new Map<string, CalEvent>();
+  for (const e of events) {
+    const seen = byId.get(e.id);
+    if (!seen || seen.calendarId === primaryId) byId.set(e.id, e);
+  }
+  return [...byId.values()];
+}
+
 /** Events across all selected calendars between `from` and `to` (ISO instants). */
 export function listEvents(from: string, to: string): Promise<CalEvent[]> {
   return recordRun("google_calendar", async () => {
@@ -154,9 +167,10 @@ export function listEvents(from: string, to: string): Promise<CalEvent[]> {
     const auth = failed.find((r) => (r.reason as Error)?.name === "GoogleNotConnectedError");
     if (auth) throw auth.reason;
     if (failed.length && failed.length === results.length) throw failed[0].reason;
-    return results
-      .flatMap((r) => (r.status === "fulfilled" ? r.value : []))
-      .sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
+    return dedupeEvents(
+      results.flatMap((r) => (r.status === "fulfilled" ? r.value : [])),
+      calendars.find((c) => c.primary)?.id,
+    ).sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
   });
 }
 
