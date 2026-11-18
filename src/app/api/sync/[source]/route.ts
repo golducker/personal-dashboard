@@ -3,6 +3,7 @@ import { getDb } from "@/db";
 import { syncRuns } from "@/db/schema";
 import { checkBearer } from "@/lib/auth";
 import { runDriveSync } from "@/lib/drive/sync";
+import { runGmailSync } from "@/lib/gmail";
 import { MAX_BODY_BYTES, ftugateBodySchema, handleFtugate } from "@/lib/ftugate/sync";
 import { isSyncSource } from "@/lib/sources";
 
@@ -50,6 +51,15 @@ export async function POST(
     try {
       const { status, result } = await runDriveSync();
       return NextResponse.json(result, { status });
+    } catch {
+      return NextResponse.json({ ok: false, error: "sync_failed" }, { status: 500 });
+    }
+  }
+
+  if (source === "gmail") {
+    try {
+      const result = await runGmailSync();
+      return NextResponse.json(result, { status: result.ok ? 200 : 207 });
     } catch {
       return NextResponse.json({ ok: false, error: "sync_failed" }, { status: 500 });
     }

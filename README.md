@@ -57,7 +57,7 @@ Thêm biến `OWNER_NAME` (ví dụ `An`) để trang chủ chào "Chào buổi 
 Phần này dài nhất, làm một lần là xong.
 
 1. Vào [Google Cloud Console](https://console.cloud.google.com/), tạo project mới.
-2. **APIs & Services → Library**, bật lần lượt: **Google Calendar API**, **Google Drive API**, **Google Sheets API**.
+2. **APIs & Services → Library**, bật lần lượt: **Google Calendar API**, **Google Drive API**, **Google Sheets API**, **Gmail API**.
 3. **APIs & Services → OAuth consent screen** (hoặc **Google Auth Platform**):
    - User type: **External**. Điền tên app và email của bạn.
    - **Audience → Test users:** thêm email Google của bạn.
@@ -66,7 +66,8 @@ Phần này dài nhất, làm một lần là xong.
    - Authorized redirect URIs: `https://<tên-app>.vercel.app/api/auth/google/callback` (thay bằng đúng domain Vercel của bạn).
 5. Copy **Client ID** và **Client secret** vào hai biến `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, redeploy.
 6. Mở dashboard → **Cài đặt → Kết nối Google**. Google sẽ cảnh báo "app chưa được xác minh": bấm **Advanced → Go to ... (unsafe)**. Đây là app của chính bạn nên không sao.
-7. Trong **Cài đặt → Nguồn Drive**, dán link folder, shared drive hoặc sheet cần đọc deadline rồi bấm **Thêm nguồn**.
+7. Gmail: mỗi 30 phút dashboard đọc mail 3 ngày gần nhất. Mail gắn sao hoặc tiêu đề có "deadline", "hạn nộp", "hạn chót", "nhắc nhở", "due" thành task Todoist (ngày trong tiêu đề thành hạn). Mail có thư mời `.ics` thành sự kiện trong lịch chính. Đã kết nối Google từ trước thì bấm **Kết nối Google** lại một lần để cấp quyền Gmail. Luật lọc nằm ở `src/lib/gmail.ts`.
+8. Trong **Cài đặt → Nguồn Drive**, dán link folder, shared drive hoặc sheet cần đọc deadline rồi bấm **Thêm nguồn**.
 
 > App để ở chế độ **Testing** thì Google cho phiên đăng nhập sống **7 ngày**. Hết hạn, dashboard hiện nút **Kết nối lại Google**, bấm là xong. Muốn bỏ giới hạn này phải đưa app qua quy trình xác minh của Google, khá mất công vì app đọc Drive.
 

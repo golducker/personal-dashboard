@@ -39,6 +39,11 @@ export default function PrivacyPage() {
             as a project index sheet.
           </li>
           <li>
+            <b>Gmail (read-only)</b>: searches recent mail for starred or deadline-titled messages and calendar
+            invitations (.ics), then adds a Todoist task or a Calendar event with the subject and a link back to the
+            mail. Only message ids are stored, to avoid duplicates. Nothing is sent, changed or deleted in Gmail.
+          </li>
+          <li>
             <b>Email address</b>: to show which Google account is connected.
           </li>
         </ul>

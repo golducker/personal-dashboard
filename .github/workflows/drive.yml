@@ -47,3 +47,12 @@ jobs:
             "$DASHBOARD_URL/api/sync/drive")
           echo "HTTP $status"
           case "$status" in 2*) ;; *) exit 1 ;; esac
+      - name: Call dashboard (Gmail)
+        if: always()
+        env:
+          SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+        run: |
+          status=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 120 -X POST             -H "Authorization: Bearer $SYNC_SECRET"             "$DASHBOARD_URL/api/sync/gmail")
+          echo "HTTP $status"
+          case "$status" in 2*) ;; *) exit 1 ;; esac

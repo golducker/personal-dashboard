@@ -5,6 +5,7 @@ export const SOURCE_LABELS: Record<SyncSource, string> = {
   todoist: "Todoist",
   ftugate: "FTUGate (Cổng sinh viên)",
   drive: "Google Drive",
+  gmail: "Gmail",
   telegram: "Telegram",
   webpush: "Thông báo đẩy (Web Push)",
 };
@@ -13,6 +14,7 @@ export const SOURCE_LABELS: Record<SyncSource, string> = {
 export const SOURCE_ENV: Record<SyncSource, string[]> = {
   google_calendar: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
   drive: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+  gmail: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
   todoist: ["TODOIST_API_TOKEN"],
   ftugate: [], // scraper runs in GitHub Actions and pushes here; no server-side env
   telegram: ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"],

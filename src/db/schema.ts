@@ -20,6 +20,7 @@ export const SYNC_SOURCES = [
   "todoist",
   "ftugate",
   "drive",
+  "gmail",
   "telegram",
   "webpush",
 ] as const;

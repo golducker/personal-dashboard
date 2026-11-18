@@ -10,6 +10,7 @@ export const GOOGLE_SCOPES = [
   "https://www.googleapis.com/auth/calendar",
   "https://www.googleapis.com/auth/drive.readonly",
   "https://www.googleapis.com/auth/drive.file",
+  "https://www.googleapis.com/auth/gmail.readonly",
 ];
 
 const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";

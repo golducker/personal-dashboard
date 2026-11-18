@@ -25,6 +25,7 @@ const SCOPE_LABELS: Record<string, string> = {
   "https://www.googleapis.com/auth/calendar": "Calendar",
   "https://www.googleapis.com/auth/drive.readonly": "Drive (đọc)",
   "https://www.googleapis.com/auth/drive.file": "Drive (file của app)",
+  "https://www.googleapis.com/auth/gmail.readonly": "Gmail (đọc)",
 };
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ google?: string }> }) {
