@@ -3,16 +3,18 @@
 import { PencilSimple, Trash } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import type { CalendarOption } from "@/lib/calendar";
 import { localDateTime } from "@/lib/time";
 import type { EventView } from "@/lib/today";
 import { call } from "./api-client";
+import { CalendarPicker } from "./calendar-picker";
 import { BTN, BTN_DANGER, BTN_GHOST, BTN_PRIMARY, INPUT } from "./card";
 
 type Mode = "view" | "edit" | "confirm";
 
 const ICON_BTN = "grid size-8 place-items-center rounded-lg text-ink-3 transition hover:bg-surface-2 hover:text-ink";
 
-export function EventItem({ event: ev }: { event: EventView }) {
+export function EventItem({ event: ev, calendars = [] }: { event: EventView; calendars?: CalendarOption[] }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("view");
   const [busy, setBusy] = useState(false);
@@ -21,6 +23,7 @@ export function EventItem({ event: ev }: { event: EventView }) {
   const [date, setDate] = useState(ev.date);
   const [start, setStart] = useState(ev.startTime);
   const [end, setEnd] = useState(ev.endTime);
+  const [calendarId, setCalendarId] = useState(ev.calendarId);
 
   const url = `/api/calendar/events/${encodeURIComponent(ev.calendarId)}/${encodeURIComponent(ev.id)}`;
 
@@ -39,7 +42,8 @@ export function EventItem({ event: ev }: { event: EventView }) {
     const times = ev.allDay
       ? { allDay: true, start: date }
       : { allDay: false, start: localDateTime(date, start), end: localDateTime(date, end) };
-    return run(() => call("PATCH", url, { title, times }));
+    const moveTo = calendarId !== ev.calendarId ? calendarId : undefined;
+    return run(() => call("PATCH", url, { title, times, moveTo }));
   }
 
   if (mode === "edit") {
@@ -59,6 +63,12 @@ export function EventItem({ event: ev }: { event: EventView }) {
               </>
             )}
           </div>
+          {calendars.some((c) => c.id === ev.calendarId) && (
+            <div className="space-y-1 text-xs text-ink-2">
+              Loại lịch{calendarId !== ev.calendarId && " (sự kiện lặp lại sẽ chuyển cả chuỗi)"}
+              <CalendarPicker calendars={calendars} value={calendarId} onChange={setCalendarId} />
+            </div>
+          )}
           {error && <p className="text-sm text-danger">{error}</p>}
           <div className="flex gap-2">
             <button disabled={busy} className={BTN_PRIMARY}>{busy ? "Đang lưu..." : "Lưu"}</button>

@@ -201,6 +201,18 @@ export async function updateEvent(calendarId: string, eventId: string, patch: Ev
   return normalizeEvent(e!, { id: calendarId, name: calendarId, color: "#4285f4" })!;
 }
 
+/**
+ * Moves an event to another calendar. Google only moves whole series, so an instance of a
+ * recurring event moves its series. Guests are not emailed about the move.
+ */
+export async function moveEvent(calendarId: string, eventId: string, destination: string): Promise<void> {
+  const src = `${BASE}/calendars/${encodeURIComponent(calendarId)}/events`;
+  const e = await googleFetch<GEvent & { recurringEventId?: string }>(`${src}/${encodeURIComponent(eventId)}`);
+  const id = e?.recurringEventId ?? eventId;
+  const qs = new URLSearchParams({ destination, sendUpdates: "none" });
+  await googleFetch(`${src}/${encodeURIComponent(id)}/move?${qs}`, { method: "POST" });
+}
+
 export async function deleteEvent(calendarId: string, eventId: string): Promise<void> {
   await googleFetch(`${BASE}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`, {
     method: "DELETE",

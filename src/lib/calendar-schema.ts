@@ -42,6 +42,8 @@ export const patchEventSchema = z
     location: text(500).optional(),
     description: text(8000).optional(),
     times: z.object(timesFields).optional(),
+    /** Destination calendar id; moves the event (its whole series if recurring). */
+    moveTo: z.string().min(1).max(300).optional(),
   })
   .transform((v, ctx) => {
     const { times, ...rest } = v;

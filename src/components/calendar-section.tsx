@@ -37,7 +37,7 @@ export async function CalendarSection({ className }: { className?: string }) {
         {todayEvents.length ? (
           <ul className="-mx-2 space-y-0.5">
             {todayEvents.map((e) => (
-              <EventItem key={`${e.calendarId}:${e.id}`} event={e.view} />
+              <EventItem key={`${e.calendarId}:${e.id}`} event={e.view} calendars={options} />
             ))}
           </ul>
         ) : (
@@ -56,7 +56,7 @@ export async function CalendarSection({ className }: { className?: string }) {
                   <h3 className="mb-1 text-xs font-semibold text-ink-2 first-letter:uppercase">{formatDayKey(d.day)}</h3>
                   <ul className="-mx-2 space-y-0.5">
                     {d.events.map((e) => (
-                      <EventItem key={`${e.calendarId}:${e.id}:${d.day}`} event={e.view} />
+                      <EventItem key={`${e.calendarId}:${e.id}:${d.day}`} event={e.view} calendars={options} />
                     ))}
                   </ul>
                 </div>
