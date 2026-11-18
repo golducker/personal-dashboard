@@ -14,6 +14,8 @@ const taskBody = z.object({
   project_id: z.string().min(1).optional(),
   description: z.string().max(8000).optional(),
   /** "HH:mm": end of the calendar time block. Not sent to Todoist. */
+  /** Calendar for the time block; default "Daily task". Not sent to Todoist. */
+  calendar_id: z.string().min(1).max(300).optional(),
   end_time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Giờ kết thúc không hợp lệ").optional(),
 });
 
@@ -32,7 +34,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
   try {
-    const { end_time, ...input } = taskBody.parse(await request.json());
+    const { end_time, calendar_id, ...input } = taskBody.parse(await request.json());
     const r = await queueOrRun("create", null, input);
     // A due with a clock time also becomes a calendar block; a calendar failure must not lose the task.
     const block = r.task?.due ? taskBlock(r.task.due.date, end_time) : null;
@@ -43,7 +45,7 @@ export async function POST(request: Request) {
           title: input.content,
           allDay: false,
           ...block,
-          calendarId: await calendarIdByName(TASK_CALENDAR_NAME),
+          calendarId: calendar_id ?? (await calendarIdByName(TASK_CALENDAR_NAME)),
           description: r.queued ? undefined : r.task!.url,
         });
         calendar = { ok: true };

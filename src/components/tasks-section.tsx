@@ -1,4 +1,6 @@
 import { CheckSquareOffset } from "@phosphor-icons/react/dist/ssr";
+import { TASK_CALENDAR_NAME, calendarOptions } from "@/lib/calendar";
+import { getCalendarWindow } from "@/lib/home-data";
 import { dayKey, timeLabel } from "@/lib/time";
 import { getTodayAndOverdue, getUpcoming, listProjects, splitByDue, TODOIST_UNAVAILABLE_MESSAGE } from "@/lib/todoist";
 import { applyOverlay, flushOutbox, listOutbox, loadCache, saveCache, takeFailed } from "@/lib/todoist-offline";
@@ -10,6 +12,10 @@ import { TaskList } from "./task-list";
 export async function TasksSection({ className }: { className?: string }) {
   const today = dayKey(new Date());
   await flushOutbox().catch(() => {});
+  // Shares the calendar panel's per-request fetch; no Google = no picker, tasks still work.
+  const cal = await getCalendarWindow(today);
+  const calendars = cal.ok ? calendarOptions(cal.data.calendars) : [];
+  const defaultCalendarId = (calendars.find((c) => c.name === TASK_CALENDAR_NAME) ?? calendars.find((c) => c.primary))?.id ?? "";
   const result = await load(async () => {
     const [now, upcoming, projects] = await Promise.all([
       getTodayAndOverdue(),
@@ -47,7 +53,7 @@ export async function TasksSection({ className }: { className?: string }) {
       <Panel title="Việc cần làm" icon={<CheckSquareOffset />} className={className}>
         <div className="space-y-4">
           <SourceProblem failure={result as Extract<typeof result, { ok: false }>} name="Todoist" />
-          {unavailable && <QuickAddTask />}
+          {unavailable && <QuickAddTask calendars={calendars} defaultCalendarId={defaultCalendarId} />}
         </div>
       </Panel>
     );
@@ -63,7 +69,7 @@ export async function TasksSection({ className }: { className?: string }) {
     <Panel title="Việc cần làm" icon={<CheckSquareOffset />} meta={count ? `${count} việc` : undefined} className={className}>
       <div className="space-y-4">
         {notice && <p className="rounded-xl bg-warn-soft px-3 py-2 text-xs text-warn">{notice}</p>}
-        <QuickAddTask />
+        <QuickAddTask calendars={calendars} defaultCalendarId={defaultCalendarId} />
         <TaskList overdue={view(split.overdue)} today={view(split.today)} later={view(later)} />
       </div>
     </Panel>

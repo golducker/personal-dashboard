@@ -75,6 +75,13 @@ export function normalizeEvent(e: GEvent, cal: Pick<CalendarInfo, "id" | "name" 
   };
 }
 
+export type CalendarOption = Pick<CalendarInfo, "id" | "name" | "color" | "primary">;
+
+/** Calendars worth offering in add forms: writable and shown in Google Calendar. */
+export function calendarOptions(calendars: CalendarInfo[]): CalendarOption[] {
+  return calendars.filter((c) => c.writable && c.selected).map(({ id, name, color, primary }) => ({ id, name, color, primary }));
+}
+
 const COLORS_KEY = "calendar_colors";
 export const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 

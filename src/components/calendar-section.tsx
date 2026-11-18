@@ -1,4 +1,5 @@
 import { CalendarBlank } from "@phosphor-icons/react/dist/ssr";
+import { calendarOptions } from "@/lib/calendar";
 import { getCalendarWindow } from "@/lib/home-data";
 import { dayKey, formatDayKey, groupByDay } from "@/lib/time";
 import { toEventView } from "@/lib/today";
@@ -23,7 +24,7 @@ export async function CalendarSection({ className }: { className?: string }) {
   const todayEvents = days.find((d) => d.day === today)?.events ?? [];
   const upcoming = days.filter((d) => d.day > today);
   const upcomingCount = upcoming.reduce((n, d) => n + d.events.length, 0);
-  const options = calendars.filter((c) => c.writable).map((c) => ({ id: c.id, name: c.name, primary: c.primary }));
+  const options = calendarOptions(calendars);
 
   return (
     <Panel

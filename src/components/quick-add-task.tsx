@@ -3,15 +3,18 @@
 import { Plus } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import type { CalendarOption } from "@/lib/calendar";
 import { call } from "./api-client";
+import { CalendarPicker } from "./calendar-picker";
 import { BTN_PRIMARY, INPUT } from "./card";
 import { showToast } from "./toast";
 
-export function QuickAddTask() {
+export function QuickAddTask({ calendars = [], defaultCalendarId = "" }: { calendars?: CalendarOption[]; defaultCalendarId?: string }) {
   const router = useRouter();
   const [content, setContent] = useState("");
   const [due, setDue] = useState("");
   const [end, setEnd] = useState("");
+  const [calendarId, setCalendarId] = useState(defaultCalendarId);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,12 +23,12 @@ export function QuickAddTask() {
     if (!content.trim()) return;
     setBusy(true);
     setError(null);
-    const r = await call("POST", "/api/todoist/tasks", { content, due_string: due.trim() || "hôm nay", end_time: end || undefined });
+    const r = await call("POST", "/api/todoist/tasks", { content, due_string: due.trim() || "hôm nay", end_time: end || undefined, calendar_id: calendarId || undefined });
     setBusy(false);
     if (!r.ok) return setError(r.error);
     if (r.data.queued) showToast({ message: "Đã lưu, sẽ đồng bộ khi Todoist hoạt động lại" });
     const cal = r.data.calendar as { ok: boolean; error?: string } | null;
-    if (cal?.ok) showToast({ message: "Đã thêm vào lịch Daily task" });
+    if (cal?.ok) showToast({ message: `Đã thêm vào lịch ${calendars.find((c) => c.id === calendarId)?.name ?? ""}`.trim() });
     else if (cal) showToast({ message: `Chưa thêm được vào lịch: ${cal.error}` });
     else if (end) showToast({ message: "Hạn không có giờ nên chưa thêm vào lịch" });
     setContent("");
@@ -44,6 +47,7 @@ export function QuickAddTask() {
           <Plus size={16} weight="bold" /> Thêm
         </button>
       </div>
+      <CalendarPicker calendars={calendars} value={calendarId} onChange={setCalendarId} label="Lịch cho khung giờ" />
       {error ? <p className="text-sm text-danger">{error}</p> : <p className="text-xs text-ink-3">Để trống hạn thì tính là hôm nay. Hạn có giờ thì thêm luôn vào lịch, giờ kết thúc để chặn khung giờ (mặc định 30 phút).</p>}
     </form>
   );

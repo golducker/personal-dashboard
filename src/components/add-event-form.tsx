@@ -3,11 +3,11 @@
 import { Plus } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import type { CalendarOption } from "@/lib/calendar";
 import { localDateTime } from "@/lib/time";
 import { call } from "./api-client";
+import { CalendarPicker } from "./calendar-picker";
 import { BTN, BTN_GHOST, BTN_PRIMARY, INPUT } from "./card";
-
-export type CalendarOption = { id: string; name: string; primary: boolean };
 
 export function AddEventForm({ calendars, today }: { calendars: CalendarOption[]; today: string }) {
   const router = useRouter();
@@ -76,16 +76,10 @@ export function AddEventForm({ calendars, today }: { calendars: CalendarOption[]
         </label>
       </div>
       {calendars.length > 1 && (
-        <label className="block space-y-1 text-xs text-ink-2">
-          Lịch
-          <select value={calendarId} onChange={(e) => setCalendarId(e.target.value)} className={INPUT}>
-            {calendars.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="space-y-1 text-xs text-ink-2">
+          Loại lịch
+          <CalendarPicker calendars={calendars} value={calendarId} onChange={setCalendarId} />
+        </div>
       )}
       {error && <p className="text-sm text-danger">{error}</p>}
       <div className="flex gap-2">
