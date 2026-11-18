@@ -36,10 +36,10 @@ export function QuickAddTask() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-1.5">
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <input value={content} onChange={(e) => setContent(e.target.value)} placeholder="Thêm việc mới" className={INPUT} aria-label="Nội dung việc" />
-        <input value={due} onChange={(e) => setDue(e.target.value)} placeholder="Hạn, vd: mai 9h" className={`${INPUT} sm:max-w-40`} aria-label="Hạn (mặc định hôm nay)" />
-        <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} title="Giờ kết thúc (time block)" className={`${INPUT} sm:max-w-32`} aria-label="Giờ kết thúc, tùy chọn" />
+      <input value={content} onChange={(e) => setContent(e.target.value)} placeholder="Thêm việc mới" className={INPUT} aria-label="Nội dung việc" />
+      <div className="flex gap-2">
+        <input value={due} onChange={(e) => setDue(e.target.value)} placeholder="Hạn, vd: mai 9h" className={`${INPUT} min-w-0 flex-1`} aria-label="Hạn (mặc định hôm nay)" />
+        <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} title="Giờ kết thúc (time block)" className={`${INPUT} w-28 shrink-0`} aria-label="Giờ kết thúc, tùy chọn" />
         <button disabled={busy || !content.trim()} className={`${BTN_PRIMARY} shrink-0`}>
           <Plus size={16} weight="bold" /> Thêm
         </button>
